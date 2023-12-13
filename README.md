@@ -6,14 +6,14 @@
 
 | include：
 ---|
----| t_KineMatrix.hpp  定义模板类  代替Eigen库进行矩阵描述及运算
----| f_TransPoseDescrib.hpp 功能类 姿态描述转化 四元数-轴角-旋转矩阵-欧拉角 
----| f_Kinematics.hpp  功能类 运动学解算 正解/逆解
+1. t_KineMatrix.hpp  ：  定义模板类  代替Eigen库进行矩阵描述及运算
+2. f_TransPoseDescrib.hpp  ： 功能类 姿态描述转化 四元数-轴角-旋转矩阵-欧拉角 
+3. f_Kinematics.hpp  ： 功能类 运动学解算 正解/逆解
 
 | src：
 ---|
----| f_TransPoseDescrib.cpp
----| f_Kinematics.cpp
+1. f_TransPoseDescrib.cpp
+2. f_Kinematics.cpp
 
 | main.cpp  测试历程
 
