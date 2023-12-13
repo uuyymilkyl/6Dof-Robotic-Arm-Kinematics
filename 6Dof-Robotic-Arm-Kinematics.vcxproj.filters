@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="p_KineMatrix.hpp">
+    <ClInclude Include="include\t_KineMatrix.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
