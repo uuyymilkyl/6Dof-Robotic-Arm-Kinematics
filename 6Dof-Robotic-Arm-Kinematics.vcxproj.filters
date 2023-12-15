@@ -18,5 +18,8 @@
     <ClInclude Include="include\t_KineMatrix.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="f_TransPoseDescrib.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
