@@ -19,8 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="f_TransPoseDescrib.hpp" />
-    <ClInclude Include="include\t_KineMatrix.hpp" />
+    <ClInclude Include="include\f_Kinematics.hpp" />
+    <ClInclude Include="include\f_TransPose.hpp" />
+    <ClInclude Include="include\t_Matrix.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

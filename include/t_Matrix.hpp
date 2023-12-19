@@ -27,7 +27,13 @@ public:
 	void _assign(KMat<T>& _M, int startRow, int endRow, int startCol, int endCol);  //部分赋值 
 	void _append_row(KMat<T>& _M);   //追加为行
 	void _append_col(KMat<T>& _M);   //追加为列
-	 
+	
+	KMat<T> _Inv3(); /// <3*3矩阵求逆
+	KMat<T> _Inv4(); /// <4*4矩阵求逆
+
+public:
+
+	T _Determinate(); //求矩阵的行列式
 private:
 
 	int m_nRows;
@@ -229,6 +235,19 @@ inline void KMat<T>::_append_col(KMat<T>& _M)
 
 	result._assign(m_vMat, 1, m_nRows, 1, m_nCols);
 	result._assign(_M, m_nCols+1, NewColsize, 1, m_nRows);
+}
+
+template<typename T>
+inline KMat<T> KMat<T>::_Inv3()
+{
+
+	return KMat<T>();
+}
+
+template<typename T>
+inline KMat<T> KMat<T>::_Inv4()
+{
+	return KMat<T>();
 }
 
 
