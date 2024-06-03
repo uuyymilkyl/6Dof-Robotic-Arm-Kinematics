@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,12 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\f_Kinematics.hpp" />
-    <ClInclude Include="include\f_TransPose.hpp" />
-    <ClInclude Include="include\t_Matrix.hpp" />
+    <ClCompile Include="include\f_TransPose.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\f_TestCalibrate.cpp" />
+    <ClCompile Include="src\RoboticCalibration\ex_RoboticCalibration.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClInclude Include="include\t_3DStruct.hpp" />
+    <ClInclude Include="include\t_Matrix.hpp" />
+    <ClInclude Include="src\f_Kinematics.hpp" />
+    <ClInclude Include="src\f_TestCalibrate.hpp" />
+    <ClInclude Include="src\f_TransPose.hpp" />
+    <ClInclude Include="src\RoboticCalibration\ex_RoboticCalibration.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -78,6 +84,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>D:\opencv4.5.5\opencv\build\include\opencv2;D:\opencv4.5.5\opencv\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\opencv4.5.5\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -108,14 +118,16 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <WarningLevel>Level1</WarningLevel>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>E:\MJProject\6Dof-Robotic-Arm-Kinematics\include\3rdParty\eigen-3.4.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opencv_world455d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

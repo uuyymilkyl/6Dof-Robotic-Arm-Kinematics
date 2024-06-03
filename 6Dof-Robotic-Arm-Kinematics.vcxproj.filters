@@ -13,21 +13,42 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\t_Matrix.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\f_Kinematics.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\f_TransPose.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
+    <Filter Include="头文件\include">
+      <UniqueIdentifier>{70ab0f9d-dbca-49ea-ba42-cefb3e09c9a7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="include\f_TransPose.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\f_TestCalibrate.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RoboticCalibration\ex_RoboticCalibration.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\t_3DStruct.hpp">
+      <Filter>头文件\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\t_Matrix.hpp">
+      <Filter>头文件\include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\f_Kinematics.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\f_TestCalibrate.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RoboticCalibration\ex_RoboticCalibration.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\f_TransPose.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
