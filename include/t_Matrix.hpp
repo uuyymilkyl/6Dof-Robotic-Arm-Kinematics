@@ -33,27 +33,30 @@ public:
 	void operator=(std::vector<std::vector<T>> _values);  ///< 等于 - 矩阵 - 赋值此二维数组
 	T& operator()(int _nRow, int _nCol);
 
-	KMat<T> operator+(const KMat<T>& _M);    ///< 加法     
+
+	KMat<T> operator+(const KMat<T>& _M);    ///< 加法
 	KMat<T> operator-(const KMat<T>& _M);    ///< 剪法
 	KMat<T> operator*(const KMat<T>& _M);    ///< 乘法
 	KMat<T> operator/(const KMat<T>& _M);    ///< 除法 - 矩阵 (除一个矩阵等于左乘）
 	KMat<T> operator/(T _Value);             ///< 除法 - 倍数 (缩放_Value倍）
 
 
-	void _assign(KMat<T>& _M, int startRow, int endRow, int startCol, int endCol);  //部分赋值 
+	void _assign(KMat<T>& _M, int startRow, int endRow, int startCol, int endCol);  //部分赋值
 	void _append_row(KMat<T>& _M);   //追加为行
 	void _append_col(KMat<T>& _M);   //追加为列
+	//打印
+	void _Print();
 
 	T _Det(); //求矩阵的行列式
-	
+
 	KMat<T> _Inv3(); /// <3*3矩阵求逆
 	KMat<T> _Inv4(); /// <4*4矩阵求逆
 
-	KMat<T> _Normalize(); //归一化 
+	KMat<T> _Normalize(); //归一化
 
 	KMat<T> _Orthogonal(KMat<T> &_inputMat); //正交化
 
-	KMat<T> _Trans(); ///< 矩阵转置 
+	KMat<T> _Trans(); ///< 矩阵转置
 
 	T _Trace(); /// < 矩阵求迹
 
@@ -63,6 +66,7 @@ public:
 	//取位移矩阵
 	KMat<T> _GetT();
 
+
 	//求向量模长
 	static T _GetModuleLength(KMat<T> &_mat);
 
@@ -71,6 +75,7 @@ public:
 
 	//求向量点乘
 	static KMat<T> _Dot(KMat<T>& _matA, KMat<T>& _matB);
+
 
 public:
 
@@ -93,7 +98,7 @@ inline KMat<T>::KMat(int _nRows, int _nCols)
 {
 	m_nRows = _nRows;
 	m_nCols = _nCols;
-	m_vMat.resize(_nRows, std::vector<T>(_nCols, 0));
+	m_vMat.resize(_nRows, std::vector<T>(_nCols, 0)); //初始化VMatrix的每个vector内的数值都为0
 }
 
 template<typename T>
@@ -215,9 +220,9 @@ inline KMat<T> KMat<T>::operator*(const KMat<T>& _M)
 	int p = _M.m_nCols;
 
 	KMat<T> result(m, p);
-	for (int i = 0; i < m; i++) 
+	for (int i = 0; i < m; i++)
 	{
-		for (int j = 0; j < p; j++) 
+		for (int j = 0; j < p; j++)
 		{
 			for (int k = 0; k < n; k++)
 			{
@@ -245,7 +250,7 @@ inline KMat<T> KMat<T>::operator/(const KMat<T>& _M)
 				result.m_vMat[i][j] +=  _M.m_vMat[k][j] * m_vMat[i][k] ;
 			}
 		}
-	} 
+	}
 	return result;
 }
 
@@ -269,14 +274,14 @@ inline KMat<T> KMat<T>::operator/(T _Value)
 template<typename T>
 inline void KMat<T>::_assign(KMat<T>& _M, int startRow, int endRow, int startCol, int endCol)
 {
-	if ((endRow - startRow + 1) != (_M.m_nRows) || (endCol - startCol + 1) != (_M.m_nCols)) 
+	if ((endRow - startRow + 1) != (_M.m_nRows) || (endCol - startCol + 1) != (_M.m_nCols))
 	{
 		throw std::invalid_argument("矩阵行列式或输入索引超限");
 	}
 
-	for (int i = 0; i < _M.m_nRows; ++i) 
+	for (int i = 0; i < _M.m_nRows; ++i)
 	{
-		for (int j = 0; j < _M.m_nCols; ++j) 
+		for (int j = 0; j < _M.m_nCols; ++j)
 		{
 			this->m_vMat[startRow - 1 + i][startCol - 1 + j] = _M.m_vMat[i][j];
 		}
@@ -317,7 +322,7 @@ inline KMat<T> KMat<T>::_Inv3()
 		throw std::invalid_argument("矩阵不为3x3");
 	}
 
-	
+
 
 	return matT;
 }
@@ -331,49 +336,7 @@ inline KMat<T> KMat<T>::_Inv4()
 template<typename T>
 inline KMat<T> KMat<T>::_Normalize()
 {
-	if (m_nRows == 3 && m_nCols == 3)
-	{
-		KMat<T> normalizedMat(3, 3);
-		// 提取旋转部分
-		KMat<T> rotationPart = *this;
-		// 计算行列式
-		T determinant = rotationPart._Det();
-		// 如果行列式为0，返回单位矩阵
-		if (determinant == 0) 
-		{
-			normalizedMat(0, 0) = normalizedMat(1, 1) = normalizedMat(2, 2) = 1;
-			return rotationPart;
-		}
-		// 归一化行列式
-		T scale = 1 / sqrt(determinant);
-		for (int i = 0; i < 3; ++i) {
-			for (int j = 0; j < 3; ++j) 
-			{
-				normalizedMat(i, j) = rotationPart(i, j) * scale;
-			}
-		}
-		return normalizedMat;
-	}
 
-	// 如果是4x4矩阵
-	else if (m_nRows == 4 && m_nCols == 4) {
-		KMat<T> normalizedMat(4, 4);
-		// 提取旋转部分
-		KMat<T> rotationPart = *this;
-		// 提取3x3子矩阵
-		KMat<T> rotationSubmatrix = rotationPart._GetR();
-		// 归一化
-		KMat<T> normalizedRotationSubmatrix = rotationSubmatrix._Normalize();
-		// 将归一化后的子矩阵放回原矩阵
-		normalizedMat._assign(normalizedRotationSubmatrix, 0, 2, 0, 2);
-		// 复制缩放部分
-		normalizedMat._assign(rotationPart, 3, 3, 0, 3);
-		return normalizedMat;
-	}
-	else {
-		// 不支持的矩阵类型，返回原矩阵
-		return *this;
-	}
 }
 
 template<typename T>
@@ -383,26 +346,26 @@ inline KMat<T> KMat<T>::_Orthogonal(KMat<T>& _inputMat)
 
 	KMat<T> orthogonalMat(3, 3);
 
-	if(_inputMat.m_nCols == 4 && _inputMat.m_nRows)
+	if(_inputMat.m_nCols == 4 && _inputMat.m_nRows==4)
 	{
 		rotateMat = _inputMat._GetR();
 	}
-	else if (_inputMat.m_nCols == 3 && _inputMat.m_nRows == 3) 
+	else if (_inputMat.m_nCols == 3 && _inputMat.m_nRows == 3)
 	{
 		rotateMat = _inputMat;
 	}
-	
+
 	// 步骤1：将第一个向量单位化
-	for (int i = 0; i < 3; ++i) 
+	for (int i = 0; i < 3; ++i)
 	{
 		T colLength = 0;
-		for (int j = 0; j < 3; ++j) 
+		for (int j = 0; j < 3; ++j)
 		{
 			colLength += rotateMat(i,j) * rotateMat(i,j);
 		}
 		colLength = std::sqrt(colLength);
 
-		for (int j = 0; j < 3; ++j) 
+		for (int j = 0; j < 3; ++j)
 		{
 			orthogonalMat(i,j) = rotateMat(i,j) / colLength;
 		}
@@ -410,22 +373,32 @@ inline KMat<T> KMat<T>::_Orthogonal(KMat<T>& _inputMat)
 	}
 
 	// 步骤2：对剩余向量进行正交化
-	for (int k = 1; k < 3; ++k) 
+	for (int k = 1; k < 3; ++k)
 	{
-		for (int i = 0; i < 3; ++i) 
+		for (int i = 0; i < 3; ++i)
 		{
 			T dotProduct = 0;
-			for (int j = 0; j < 3; ++j) 
+			for (int j = 0; j < 3; ++j)
 			{
 				dotProduct += rotateMat(i,j) * orthogonalMat(k,j);
 			}
-			for (int j = 0; j < 3; ++j) 
+			for (int j = 0; j < 3; ++j)
 			{
 				orthogonalMat(k,j) -= dotProduct * orthogonalMat(i,j);
 			}
 		}
 	}
 
+	if (_inputMat.m_nCols == 4 && _inputMat.m_nRows == 4)
+	{
+		KMat<T> fillupMat(4, 4);
+		fillupMat._assign(orthogonalMat, 1, 3, 1, 3);
+		fillupMat(0, 3) = _inputMat(0, 3);
+		fillupMat(1, 3) = _inputMat(1, 3);
+		fillupMat(2, 3) = _inputMat(2, 3);
+		fillupMat(3, 3) = _inputMat(3, 3);
+		return fillupMat;
+	}
 	return orthogonalMat;
 }
 
@@ -433,7 +406,7 @@ template<typename T>
 inline KMat<T> KMat<T>::_Trans()
 {
 	KMat<T> ResultMat(this->m_nCols,this->m_nRows);
-	
+
 	return KMat<T>();
 }
 
@@ -499,18 +472,18 @@ inline KMat<T> KMat<T>::_Cross(KMat<T>& _matA, KMat<T>& _matB)
 	KMat<T> tResult(_matA.m_nRows, _matA.m_nCols);
 	if (_matA.m_nRows == 3)
 	{ //竖向向量
-		
+
 		tResult(0, 0) = _matA(1, 0) * _matB(2, 0) - _matA(2, 0) * _matB(1, 0);
 		tResult(1, 0) = _matA(2, 0) * _matB(0, 0) - _matA(0, 0) * _matB(2, 0);
 		tResult(2, 0) = _matA(0, 0) * _matB(1, 0) - _matA(1, 0) * _matB(0, 0);
 	}
-	if (_matA.m_nCols == 3) 
+	if (_matA.m_nCols == 3)
 	{
 		//横向向量
 		tResult(0, 1) = _matA(0,1) * _matB(0, 2) - _matA(0,2) * _matB( 0,1);
 		tResult(0, 2) = _matA(0,2) * _matB(0, 0) - _matA(0,0) * _matB( 0,2);
 		tResult(0, 3) = _matA(0,0) * _matB(0, 1) - _matA(0,1) * _matB( 0,0);
-	}														    
+	}
 	return tResult;
 }
 
@@ -520,6 +493,17 @@ template<typename T>
 inline KMat<T> KMat<T>::_Dot(KMat<T>& _matA, KMat<T>& _matB)
 {
 	return T();
+}
+
+template<typename T>
+inline void KMat<T>::_Print()
+{
+	for (int i = 0; i < m_nRows; ++i) {
+		for (int j = 0; j < m_nCols; ++j) {
+			std::cout << m_vMat[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
 }
 
 
@@ -532,17 +516,17 @@ inline T KMat<T>::_Det()
 		throw std::invalid_argument("矩阵非方针，不可求行列式.");
 	}
 
-	if (m_nRows == 1) 
+	if (m_nRows == 1)
 	{
 		return m_vMat[0][0];
 	}
-	else if (m_nRows == 2) 
+	else if (m_nRows == 2)
 	{
 		return m_vMat[0][0] * m_vMat[1][1] - m_vMat[0][1] * m_vMat[1][0];
 	}
 	else {
 		T det = 0;
-		for (int i = 0; i < m_nRows; i++) 
+		for (int i = 0; i < m_nRows; i++)
 		{
 			KMat<T> subMat(m_nRows - 1, m_nCols - 1);
 			for (int j = 1; j < m_nRows; j++) {

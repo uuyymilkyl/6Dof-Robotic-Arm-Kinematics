@@ -1,8 +1,8 @@
 #ifndef _MTESTCALIBRATE_HPP_
 #define _MSTETCALIBRATE_HPP
 
-#include"../include/t_Matrix.hpp"
-#include "./f_TransPose.hpp"
+#include "../src/RoboticCalibration/ex_RoboticCalibration.h"
+
 class tRoboticCaliTest
 {
 public:
@@ -12,7 +12,6 @@ public:
 public :
 		std::vector<KMat<double>> TCP_Kmats;
 		std::vector<KMat<double>> TCF_TrackerKmats;
-		std::vector<KMat<double>> TCF_RobotKmats;
 		std::vector<KMat<double>> Tsai_TrackerKmats;
 		std::vector<KMat<double>> Tsai_RobotKmats;
 

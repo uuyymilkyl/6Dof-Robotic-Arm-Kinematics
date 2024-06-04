@@ -8,27 +8,27 @@ tRoboticCaliTest::tRoboticCaliTest()
 		Tsai_TrackerKmat1, Tsai_TrackerKmat2, Tsai_TrackerKmat3, Tsai_TrackerKmat4, Tsai_TrackerKmat5, Tsai_TrackerKmat6,
 		Tsai_RobotKmat1, Tsai_RobotKmat2, Tsai_RobotKmat3, Tsai_RobotKmat4, Tsai_RobotKmat5, Tsai_RobotKmat6(4, 4);
 	TCP_Kmat1 = {
-		{-0.290682,0.950913,0.10615,205.877},
-		{0.936558,0.260060,0.235007,2796.02},
-		{0.195866,0.167728,-0.96618,907.116},
+		{0.260843 ,0.806086 ,-0.531212 ,91.4309},
+		{0.955941,-0.292436,0.0256426 ,2659.88},
+		{-0.134676 ,-0.514496,-0.846851 ,927.739},
 		{0,0,0,1} };
 	TCP_Kmat2 = {
-		{-0.123936, 0.643885,0.755018,290.423},
-		{ 0.840981,0.472013,-0.264489,2734.71},
-		{ -0.526679, 0.602176,-0.599994,849.983},
+		{-0.0462035,  0.539185,-0.840919, 208.603},
+		{ 0.8166041,- 0.464468, - 0.342677,2695.37},
+		{-0.575346 ,- 0.702531, - 0.41884 ,933.349},
 		{0,0,0,1} };
 	TCP_Kmat3 = {
-		{-0.28978,0.539335,-0.790661,422.686},
-		{0.383489,-0.691464,-0.61222,2660.19},
-		{-0.876905,-0.48062,-0.00645646,920.816},
+		{-0.0201326, 0.969993,0.242297,295.701},
+		{0.159403 ,0.24236 ,- 0.957002 ,2553.1},
+		{-0.987008,0.0193559, - 0.159499, 936.048},
 		{0,0,0,1} };
 	TCP_Kmat4 = {
-		{-0.809748,0.29375,-0.507956,306.23},
-		{0.114287, 0.928046,0.354498,5898.27},
-		{0.575541, 0.229001, -0.785055,887.644},
+		{0.720066 , 0.562742 ,0.405987 ,179.656},
+		{0.506477 ,- 0.826162, 0.246854 ,2579.43},
+		{0.474327 ,0.0278718, - 0.879908, 859.899},
 		{0,0,0,1} };
 
-	TCP_Kmats.push_back(TCP_Kmat1);
+	//TCP_Kmats.push_back(TCP_Kmat1);
 	TCP_Kmats.push_back(TCP_Kmat2);
 	TCP_Kmats.push_back(TCP_Kmat3);
 	TCP_Kmats.push_back(TCP_Kmat4);
@@ -56,8 +56,11 @@ tRoboticCaliTest::tRoboticCaliTest()
 	TCF_RobotKmat2 = TranPose::EulToRot_XYZ_T(TCF_RobotPoint2);
 	TCF_RobotKmat3 = TranPose::EulToRot_XYZ_T(TCF_RobotPoint2);
 
+	TCF_TrackerKmats.push_back(TCF_TrackerKmat1);
+	TCF_TrackerKmats.push_back(TCF_TrackerKmat2);
+	TCF_TrackerKmats.push_back(TCF_TrackerKmat3);
 
-
+	// --------------- TsaiLenzÊý¾Ý ---------------
 	KMat<double> Tsai_RobotPoint1, Tsai_RobotPoint2, Tsai_RobotPoint3, Tsai_RobotPoint4, Tsai_RobotPoint5, Tsai_RobotPoint6(6, 1);
 	Tsai_RobotPoint1 = { {464.800,130.240,800.000,-161.588,  0.000,-179.982} };
 	Tsai_RobotPoint2 = { {450.000,100.000,800.000, 175.543,-11.370,179.139} };
@@ -72,6 +75,13 @@ tRoboticCaliTest::tRoboticCaliTest()
 	Tsai_RobotKmat4 = TranPose::EulToRot_XYZ_T(Tsai_RobotPoint4);
 	Tsai_RobotKmat5 = TranPose::EulToRot_XYZ_T(Tsai_RobotPoint5);
 	Tsai_RobotKmat6 = TranPose::EulToRot_XYZ_T(Tsai_RobotPoint6);
+
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat1);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat2);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat3);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat4);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat5);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat6);
 
 	Tsai_TrackerKmat1 = {
 	{ 0.273061,-0.902117,-0.3341,-449.875 },
@@ -110,12 +120,28 @@ tRoboticCaliTest::tRoboticCaliTest()
 	{ 0,0,0,1 }
 	};
 
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat1);
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat2);
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat3);
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat4);
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat5);
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat6);
 
-
-
-
+	/*for (int i = 0; i < TCP_Kmats.size(); i++)
+	{
+		TCP_Kmats[i] = TCP_Kmats[i]._Orthogonal(TCP_Kmats[i]);
+	}
+	for (int i = 0; i < TCF_TrackerKmats.size(); i++)
+	{
+		TCF_TrackerKmats[i] = TCF_TrackerKmats[i]._Orthogonal(TCF_TrackerKmats[i]);
+	}
+	for (int i = 0; i < Tsai_RobotKmats.size(); i++)
+	{
+		Tsai_RobotKmats[i] = Tsai_RobotKmats[i]._Orthogonal(Tsai_RobotKmats[i]);
+		Tsai_TrackerKmats[i] = Tsai_TrackerKmats[i]._Orthogonal(Tsai_TrackerKmats[i]);
+	}*/
 	TestCalculateTcp();
-	TestCalculateTcf();
+	//TestCalculateTcf();
 	TestCalculateTsaiLenzForRobot();
 }
 
@@ -125,6 +151,11 @@ tRoboticCaliTest::~tRoboticCaliTest()
 
 void tRoboticCaliTest::TestCalculateTcp()
 {
+	//KMat<double> outputMat1;
+	//MCalibration::LeastSquareSolveTCP(TCP_Kmats, outputMat1);
+
+	//KMat<double> outputMat2;
+	//MCalibration::Calibration_OpenCV_TCP(TCP_Kmats, outputMat2);
 }
 void tRoboticCaliTest::TestCalculateTcf()
 {
@@ -132,4 +163,7 @@ void tRoboticCaliTest::TestCalculateTcf()
 
 void tRoboticCaliTest::TestCalculateTsaiLenzForRobot()
 {
+	KMat<double> result;
+	MCalibration::Calibration_OpenCV_TsaiLenz(Tsai_RobotKmats, Tsai_TrackerKmats, result, 6);
+	result._Print();
 }

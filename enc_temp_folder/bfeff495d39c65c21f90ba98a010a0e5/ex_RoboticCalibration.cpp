@@ -158,7 +158,6 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 	{
 
 		KMat<double> KMat_RobotPoseR = _vec_inputRobotPoseMat[i]._GetR();
-		std::cout << " TsaiRobotPoint " << i << " : " << std::endl;
 		KMat_RobotPoseR._Print();
 		KMat<double> KMat_RobotPoseT = _vec_inputRobotPoseMat[i]._GetT();
 		KMat_RobotPoseT._Print();
@@ -170,10 +169,6 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 		KMat<double> KMat_TrackerPoseT = _vec_inputRobotPoseMat[i]._GetT();
 		cv::Mat TrackerPose_R = TransKMatToMat(KMat_TrackerPoseR);
 		cv::Mat TrackerPose_T = TransKMatToMat(KMat_TrackerPoseT);
-
-		std::cout << " TsaiTrackerPoint " << i << " : " << std::endl;
-		KMat_TrackerPoseR._Print();
-		KMat_TrackerPoseT._Print();
 
 		vMat_RobotPoses_R.push_back(RobotPose_R);
 		vMat_RobotPoses_T.push_back(RobotPose_T);
