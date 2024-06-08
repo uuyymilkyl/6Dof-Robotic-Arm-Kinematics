@@ -2,6 +2,8 @@
 #define _M3DSTUCT_HPP_
 
 #include <iostream>
+#include"t_Matrix.hpp"
+#include <Eigen/Dense>
 
 struct PlaneVector3D {
     float a, b, c;
@@ -138,7 +140,19 @@ public:
         return Point3D(x / scalar, y / scalar, z / scalar);
     }
 
+    // ¥”Kmat÷–º”‘ÿPoint3D
+    Point3D _fromKMat(KMat<T> _mat)
+    {
+        if (_mat.m_nCols == 6)
+        {
+            return Point3D(_mat(0, 0), _mat(0, 1), _mat(0, 2));
+        }
+        if (_mat.m_nRows == 4 && _mat.m_nCols == 4)
+        {
+            return Point3D(_mat(0, 3), _mat(1, 3), _mat(2, 3));
+        }
 
+    }
 
 public:
     T Distance(Point3D<T>& _Point);
@@ -176,5 +190,50 @@ inline T Point3D<T>::Distance(Point3D<T>& _Point)
 }
 
 
+static inline void fitSphere(std::vector<Point3D<double>> &_input, Point3D<double> &_centerPoint,double &_sphereR)
+{
+    Eigen::MatrixXd A(_input.size(), 4);
+    Eigen::MatrixXd B(_input.size(),1);
 
+    for (int i = 0; i < _input.size(); i++)
+    {
+        double x = _input[i].x;
+        double y = _input[i].y;
+        double z = _input[i].z;
+        A(i, 0) = 2 * x;
+        A(i, 1) = 2 * y;
+        A(i, 2) = 2 * z;
+        A(i, 3) = 1;
+        B(i,0) = x * x + y * y + z * z;
+    }
+
+    // Eigen::MatrixXd x = A.colPivHouseholderQr().solve(B);
+    Eigen::Matrix<double, 4, 1> x = A.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(B);
+    std::cout << " solve sphere : " << std::endl;
+    std::cout << x << std::endl;
+    _centerPoint.x = x(0);
+    _centerPoint.y = x(1);
+    _centerPoint.z = x(2);
+    _sphereR = sqrt( (x(0) * x(0) + x(1) * x(1) + x(2) * x(2) ) - x(3) );
+}
+
+static inline void fitAvgDeviation(std::vector<Point3D<double>> &_inputPoint, Point3D<double> &_inputCenter,double &_dInputR, double &_dOutputAvgDivia)
+{
+    double dDivSum = 0;
+    std::vector<double> vecDis;
+    for (int i = 0; i < _inputPoint.size(); i++)
+    {
+        double dDisEach = sqrt(pow(_inputCenter.x - _inputPoint[i].x, 2) + pow(_inputCenter.y - _inputPoint[i].y, 2) + pow(_inputCenter.z - _inputPoint[i].z, 2));
+        //double dDivR = abs(dDisEach - _dInputR);
+        vecDis.push_back(dDisEach);
+
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        dDivSum = dDivSum+ (vecDis[i + 1] - vecDis[i]);
+    }
+    _dOutputAvgDivia = dDivSum/3;
+
+
+}
 #endif

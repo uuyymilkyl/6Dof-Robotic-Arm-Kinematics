@@ -18,6 +18,17 @@ public:
 
 public:
 
+    /**
+    *****************************************************************************
+    *  @brief  TCP标定 优化标定数据
+    *
+    *  @param   _vInputPoseMat  [输入追踪器原始姿态）]
+    *  @param   _OutputMat      [输出求解矩阵结果 ]
+
+    *****************************************************************************
+    */
+
+    static void Calibration_Correct_TCP_Data(std::vector < KMat<double>>& _vInputMats,  std::vector<KMat<double>> &_vOutputMats);
 
     /**
     *****************************************************************************
@@ -50,10 +61,7 @@ public:
     *  @param   _vInputTrackerPoseMat [输入追踪器的点]
     *  @param   _OutputMat      [输出求解矩阵结果 ]
     *  @param   numPoses        [姿态的个数]
-    *
-    *  @return  无返回值
-    *  @author  HuangMinyu
-    *  @version V1.0.0
+
     *
     *----------------------------------------------------------------------------
     *  @note 历史版本   修改人员     修改日期    修改内容

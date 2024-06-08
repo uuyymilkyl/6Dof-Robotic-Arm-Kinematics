@@ -9,16 +9,24 @@ MCalibration::~MCalibration()
 {
 }
 
+void MCalibration::Calibration_Correct_TCP_Data(std::vector<KMat<double>>& _vInputMats, std::vector<KMat<double>>& _vOutputMats)
+{
+
+}
+
 void MCalibration::Calibration_OpenCV_TCP(std::vector<KMat<double>>& _vec_inputPoseMat, KMat<double>& _outputMat)
 {
 	std::vector<KMat<double>> vDeRotateMat;
 	std::vector<KMat<double>> vDePoseMat;
+	Eigen::MatrixXd A(_vec_inputPoseMat.size()*3, 3);
+	Eigen::MatrixXd C(_vec_inputPoseMat.size() * 3, 1);
 
 	// 前后做差求 差值旋转矩阵 和 差值平移矩阵
 	for (int i = 0; i < _vec_inputPoseMat.size() - 1; i++)
 	{
 		KMat<double> DeRotateMat(3, 3);
-		DeRotateMat={
+		DeRotateMat=
+		{
 			{ _vec_inputPoseMat[i](0, 0) - _vec_inputPoseMat[i + 1](0, 0), _vec_inputPoseMat[i](0, 1) - _vec_inputPoseMat[i + 1](0, 1), _vec_inputPoseMat[i](0, 2) - _vec_inputPoseMat[i + 1](0, 2)},
 			{ _vec_inputPoseMat[i](1, 0) - _vec_inputPoseMat[i + 1](1, 0), _vec_inputPoseMat[i](1, 1) - _vec_inputPoseMat[i + 1](1, 1), _vec_inputPoseMat[i](1, 2) - _vec_inputPoseMat[i + 1](1, 2)},
 			{ _vec_inputPoseMat[i](2, 0) - _vec_inputPoseMat[i + 1](2, 0), _vec_inputPoseMat[i](2, 1) - _vec_inputPoseMat[i + 1](2, 1), _vec_inputPoseMat[i](2, 2) - _vec_inputPoseMat[i + 1](2, 2)}
@@ -28,17 +36,19 @@ void MCalibration::Calibration_OpenCV_TCP(std::vector<KMat<double>>& _vec_inputP
 
 		KMat<double> DeTranslateMat(3, 1);
 		DeTranslateMat={
-			{_vec_inputPoseMat[i+1](0, 3) - _vec_inputPoseMat[i ](0, 3)},
-			{_vec_inputPoseMat[i+1](1, 3) - _vec_inputPoseMat[i ](1, 3)},
-			{_vec_inputPoseMat[i+1](2, 3) - _vec_inputPoseMat[i ](2, 3)}
+			{_vec_inputPoseMat[i+1](0, 3) - _vec_inputPoseMat[i](0, 3)},
+			{_vec_inputPoseMat[i+1](1, 3) - _vec_inputPoseMat[i](1, 3)},
+			{_vec_inputPoseMat[i+1](2, 3) - _vec_inputPoseMat[i](2, 3)}
 			};
 		vDeRotateMat.push_back(DeRotateMat);
 		vDePoseMat.push_back(DeTranslateMat);
 
-		std::cout << " DeRotate " << std::endl;
-		DeRotateMat._Print();
-		std::cout << " DePost " << std::endl;
-		DeTranslateMat._Print();
+
+		// 转为Eigen
+		Eigen::MatrixXd EigenMatR = KMat2Eigen(DeRotateMat);
+		Eigen::MatrixXd EigenMatT = KMat2Eigen(DeTranslateMat);
+		A.block<3, 3>(3 * i, 0) = EigenMatR;
+		C.block<3,1>(3 * i,0 ) = EigenMatT;
 	}
 
 	// 将做差后的矩阵赋值到OpenCV的同一个Mat中，组成9*3 R矩阵和9*1 T矩阵
@@ -76,6 +86,18 @@ void MCalibration::Calibration_OpenCV_TCP(std::vector<KMat<double>>& _vec_inputP
 
 	// 得到TCP矩阵
 	_outputMat = Solve_Result;
+	std::cout << "result TCP : " << std::endl;
+	Solve_Result._Print();
+
+	//(方法二：)尝试用Eigen::
+
+	Eigen::Matrix<double, 3, 1> B = A.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(C);
+	std::cout << "result TCP (Eigen）" << std::endl;
+	std::cout << B << std::endl;
+
+	// 计算标定误差
+	cv::Mat deviation = R_Mat * Solve_Mat - P_Mat;
+
 }
 
 void MCalibration::Calibration_OpenCV_TCF(std::vector<KMat<double>>& _vec_inputPoseMat, KMat<double>& _outputMat)
@@ -120,35 +142,15 @@ void MCalibration::Calibration_OpenCV_TCF(std::vector<KMat<double>>& _vec_inputP
 		};
 
 	_outputMat = TCFRotateMat;
+	std::cout << " result TCF : " << std::endl;
+	TCFRotateMat._Print();
 }
 
 int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_inputRobotPoseMat, std::vector<KMat<double>>& _vec_inputTrackerPoseMat, KMat<double>& _outputMat, int numPoses)
 {
 	// TsaiLenz N(N>4)点标定
 	int PoseSize = numPoses;
-	/*
-	std::vector< KMat<double>> vRobotPoses_R;
-	std::vector< KMat<double>> vRobotPoses_T; // 左矩阵 AX=XB的A
 
-	std::vector< KMat<double>> vTrackerPoses_R;  // 右矩阵 AX=BX的B
-	std::vector< KMat<double>> vTrackerPoses_T;
-
-
-	// 以KMat形式
-	for (int i = 0; i < PoseSize; i++)
-	{
-		KMat<double> RobotPose_R = _vec_inputRobotPoseMat[i]._GetR();
-		KMat<double> RobotPose_T = _vec_inputRobotPoseMat[i]._GetT();
-
-		KMat<double> TrackerPose_R = _vec_inputTrackerPoseMat[i]._GetR();
-		KMat<double> TrackerPose_T = _vec_inputTrackerPoseMat[i]._GetT();
-
-		vRobotPoses_R.push_back(RobotPose_R);
-		vRobotPoses_T.push_back(RobotPose_T);
-		vRobotPoses_T.push_back(TrackerPose_R);
-		vRobotPoses_T.push_back(TrackerPose_T);
-	}
-	*/
 	//换成OpenCV的Mat形式
 	std::vector< cv::Mat> vMat_RobotPoses_R; // 左矩阵 AX=XB的A
 	std::vector< cv::Mat> vMat_RobotPoses_T;
@@ -166,8 +168,8 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 		cv::Mat RobotPose_R = TransKMatToMat(KMat_RobotPoseR);
 		cv::Mat RobotPose_T = TransKMatToMat(KMat_RobotPoseT);
 
-		KMat<double> KMat_TrackerPoseR = _vec_inputRobotPoseMat[i]._GetR();
-		KMat<double> KMat_TrackerPoseT = _vec_inputRobotPoseMat[i]._GetT();
+		KMat<double> KMat_TrackerPoseR = _vec_inputTrackerPoseMat[i]._GetR();
+		KMat<double> KMat_TrackerPoseT = _vec_inputTrackerPoseMat[i]._GetT();
 		cv::Mat TrackerPose_R = TransKMatToMat(KMat_TrackerPoseR);
 		cv::Mat TrackerPose_T = TransKMatToMat(KMat_TrackerPoseT);
 
@@ -185,6 +187,20 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 
 	cv::calibrateHandEye(vMat_RobotPoses_R, vMat_RobotPoses_T, vMat_RobotPoses_T, vMat_RobotPoses_T, CaliResult_R, CaliResult_T, cv::CALIB_HAND_EYE_TSAI);
 
+	KMat<double> CaliResultR_Kmat(3, 3);
+	KMat<double> CaliResultT_Kmat(3, 1);
+
+	CaliResultR_Kmat = TramsMatToKMat(CaliResult_R);
+	CaliResultT_Kmat = TramsMatToKMat(CaliResult_T);
+
+	KMat<double> Result(4, 4);
+	Result._assign(CaliResultR_Kmat, 1, 3, 1, 3);
+	Result(0, 3) = CaliResultT_Kmat(0, 0);
+	Result(1, 3) = CaliResultT_Kmat(1, 0);
+	Result(2, 3) = CaliResultT_Kmat(2, 0);
+	Result(3, 3) = 1;
+
+	_outputMat = Result;
 	return 0;
 }
 
@@ -255,7 +271,7 @@ void MCalibration::LeastSquareSolveTCP(std::vector<KMat<double>>& _vec_inputPose
 		KMat<double> VMatInputPose = _vec_inputPose[i];
 		Eigen::MatrixXd EigenMat = KMat2Eigen(VMatInputPose);
 		vec_EigenMat.push_back(EigenMat);
-		std::cout << " Each  matrix : --- " << std::endl << EigenMat << std::endl;
+		//std::cout << " Each  matrix : --- " << std::endl << EigenMat << std::endl;
 	}
 	// 构造矩阵AE
 	// 构造矩阵 A 和向量 b
@@ -285,8 +301,8 @@ void MCalibration::LeastSquareSolveTCP(std::vector<KMat<double>>& _vec_inputPose
 		A.block<3, 3>(3 * i, 3) = R;
 		b.segment<3>(3 * i) = t;
 
-		std::cout << " A  matrix : --- " << std::endl << A << std::endl;
-		std::cout << " B matrix : --- " << std::endl << b << std::endl;
+		//std::cout << " A  matrix : --- " << std::endl << A << std::endl;
+		//std::cout << " B matrix : --- " << std::endl << b << std::endl;
 	}
 
 
