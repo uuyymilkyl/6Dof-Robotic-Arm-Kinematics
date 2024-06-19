@@ -97,6 +97,13 @@ void MCalibration::Calibration_OpenCV_TCP(std::vector<KMat<double>>& _vec_inputP
 
 	// 计算标定误差
 	cv::Mat deviation = R_Mat * Solve_Mat - P_Mat;
+	double sum_error =0 ;
+	int  num_error = deviation.rows;
+	for (int i = 0; i < deviation.rows  ; i++)
+	{
+		sum_error += sqrt(deviation.at<double>(i, 0) * deviation.at<double>(i, 0));
+	}
+	double avg_error = sum_error / num_error;
 
 }
 
@@ -146,62 +153,228 @@ void MCalibration::Calibration_OpenCV_TCF(std::vector<KMat<double>>& _vec_inputP
 	TCFRotateMat._Print();
 }
 
-int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_inputRobotPoseMat, std::vector<KMat<double>>& _vec_inputTrackerPoseMat, KMat<double>& _outputMat, int numPoses)
+int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_inputRobotPoseMat, std::vector<KMat<double>>& _vec_inputTrackerPoseMat, KMat<double>& _outputMat)
 {
-	// TsaiLenz N(N>4)点标定
-	int PoseSize = numPoses;
 
 	//换成OpenCV的Mat形式
-	std::vector< cv::Mat> vMat_RobotPoses_R; // 左矩阵 AX=XB的A
+	std::vector< cv::Mat> vMat_RobotPoses_R;      // 左矩阵
 	std::vector< cv::Mat> vMat_RobotPoses_T;
-	std::vector< cv::Mat> vMat_TrackerPoses_R;  // 右矩阵 AX=BX的B
+	std::vector< cv::Mat> vMat_RobotPoses_R_Inv;  // 左矩阵求逆
+	std::vector< cv::Mat> vMat_RobotPoses_T_Inv;
+
+	std::vector< cv::Mat> vMat_TrackerPoses_R;    // 右矩阵
 	std::vector< cv::Mat> vMat_TrackerPoses_T;
-	for (int i = 0; i < PoseSize; i++)
+	std::vector< cv::Mat> vMat_TrackerPoses_R_Inv;// 右矩阵求逆
+	std::vector< cv::Mat> vMat_TrackerPoses_T_Inv;
+
+	for (int i = 0; i < _vec_inputRobotPoseMat.size()-1; i++)
 	{
+		// 机器人手
+		KMat<double> KMat_RobotPose_R = _vec_inputRobotPoseMat[i] ._GetR();
+		KMat<double> KMat_RobotPose_T = _vec_inputRobotPoseMat[i] ._GetT();
+		// 转换成cvMat格式
+		cv::Mat cvMat_RobotPose_R = TransKMatToMat(KMat_RobotPose_R);
+		cv::Mat cvMat_RobotPose_T = TransKMatToMat(KMat_RobotPose_T);
+		// 放进容器中
+		vMat_RobotPoses_R.push_back(cvMat_RobotPose_R);
+		vMat_RobotPoses_T.push_back(cvMat_RobotPose_T);
 
-		KMat<double> KMat_RobotPoseR = _vec_inputRobotPoseMat[i]._GetR();
-		std::cout << " TsaiRobotPoint " << i << " : " << std::endl;
-		KMat_RobotPoseR._Print();
-		KMat<double> KMat_RobotPoseT = _vec_inputRobotPoseMat[i]._GetT();
-		KMat_RobotPoseT._Print();
+		// 机器人手求逆
+		KMat<double> KMat_RobotPose_Inv = _vec_inputRobotPoseMat[i]._Inv4();
+		KMat<double> KMat_RobotPose_Inv_R = KMat_RobotPose_Inv._GetR();
+		KMat<double> KMat_RobotPose_Inv_T = KMat_RobotPose_Inv._GetT();
+		// 转换成cvMat格式
+		cv::Mat cvMat_RobotPose_Inv_R = TransKMatToMat(KMat_RobotPose_Inv_R);
+		cv::Mat cvMat_RobotPose_Inv_T = TransKMatToMat(KMat_RobotPose_Inv_T);
+		// 放进容器中
+		vMat_RobotPoses_R_Inv.push_back(cvMat_RobotPose_Inv_R);
+		vMat_RobotPoses_T_Inv.push_back(cvMat_RobotPose_Inv_T);
 
-		cv::Mat RobotPose_R = TransKMatToMat(KMat_RobotPoseR);
-		cv::Mat RobotPose_T = TransKMatToMat(KMat_RobotPoseT);
 
-		KMat<double> KMat_TrackerPoseR = _vec_inputTrackerPoseMat[i]._GetR();
-		KMat<double> KMat_TrackerPoseT = _vec_inputTrackerPoseMat[i]._GetT();
-		cv::Mat TrackerPose_R = TransKMatToMat(KMat_TrackerPoseR);
-		cv::Mat TrackerPose_T = TransKMatToMat(KMat_TrackerPoseT);
+		// 追踪器-基站
+		// 分开获取R矩阵和T矩阵
+		KMat<double> KMat_TrackerPose_R = _vec_inputTrackerPoseMat[i]._GetR();
+		KMat<double> KMat_TrackerPose_T = _vec_inputTrackerPoseMat[i]._GetT();
+		// 转换成cvMat格式
+		cv::Mat cvMat_TrackerPose_R = TransKMatToMat(KMat_TrackerPose_R);
+		cv::Mat cvMat_TrackerPose_T = TransKMatToMat(KMat_TrackerPose_T);
+		// 放进容器中
+		vMat_TrackerPoses_R.push_back(cvMat_TrackerPose_R);
+		vMat_TrackerPoses_T.push_back(cvMat_TrackerPose_T);
 
-		std::cout << " TsaiTrackerPoint " << i << " : " << std::endl;
-		KMat_TrackerPoseR._Print();
-		KMat_TrackerPoseT._Print();
 
-		vMat_RobotPoses_R.push_back(RobotPose_R);
-		vMat_RobotPoses_T.push_back(RobotPose_T);
-		vMat_TrackerPoses_R.push_back(TrackerPose_R);
-		vMat_TrackerPoses_T.push_back(TrackerPose_T);
+		// 追踪器-基站求逆
+		KMat<double> KMat_TrackerPose_Inv = _vec_inputTrackerPoseMat[i]._Inv4();
+		// 分开获取R矩阵和T矩阵
+		KMat<double> KMat_TrackerPose_Inv_R = KMat_TrackerPose_Inv._GetR();
+		KMat<double> KMat_TrackerPose_Inv_T = KMat_TrackerPose_Inv._GetT();
+		// 转换成cvMat格式
+		cv::Mat	 cvMat_TrackerPose_Inv_R = TransKMatToMat(KMat_TrackerPose_Inv_R);
+		cv::Mat	 cvMat_TrackerPose_Inv_T = TransKMatToMat(KMat_TrackerPose_Inv_T);
+		// 放进容器中
+		vMat_TrackerPoses_R_Inv.push_back(cvMat_TrackerPose_Inv_R);
+		vMat_TrackerPoses_T_Inv.push_back(cvMat_TrackerPose_Inv_T);
 	}
-	cv::Mat CaliResult_R;
-	cv::Mat CaliResult_T;
+	cv::Mat cMat_TrackToRoTerm_R;
+	cv::Mat cMat_TrackToRoTerm_T;
+	KMat<double> kMat_TrackToRoTerm_R(3, 3);
+	KMat<double> kMat_TrackToRoTerm_T(3, 1);
+	// ①
+	//cv::calibrateHandEye(vMat_RobotPoses_R, vMat_RobotPoses_T, vMat_TrackerPoses_R, vMat_TrackerPoses_T, cMat_TrackToRoTerm_R, cMat_TrackToRoTerm_T, cv::CALIB_HAND_EYE_PARK);
 
-	cv::calibrateHandEye(vMat_RobotPoses_R, vMat_RobotPoses_T, vMat_RobotPoses_T, vMat_RobotPoses_T, CaliResult_R, CaliResult_T, cv::CALIB_HAND_EYE_TSAI);
+	// ②
+	cv::calibrateHandEye(vMat_RobotPoses_R, vMat_RobotPoses_T, vMat_TrackerPoses_R_Inv, vMat_TrackerPoses_T_Inv, cMat_TrackToRoTerm_R, cMat_TrackToRoTerm_T, cv::CALIB_HAND_EYE_PARK);
 
-	KMat<double> CaliResultR_Kmat(3, 3);
-	KMat<double> CaliResultT_Kmat(3, 1);
+	kMat_TrackToRoTerm_R = TramsMatToKMat(cMat_TrackToRoTerm_R);
+	kMat_TrackToRoTerm_T = TramsMatToKMat(cMat_TrackToRoTerm_T);
+	kMat_TrackToRoTerm_R._Print();
+	kMat_TrackToRoTerm_T._Print();
 
-	CaliResultR_Kmat = TramsMatToKMat(CaliResult_R);
-	CaliResultT_Kmat = TramsMatToKMat(CaliResult_T);
+
+	cv::Mat cMat_BToB_R;
+	cv::Mat cMat_BToB_T;
+
+	KMat<double> kMat_BToB_R(3, 3);
+	KMat<double> kMat_BToB_T(3, 1);
+	// ③
+	//cv::calibrateHandEye(vMat_RobotPoses_R_Inv, vMat_RobotPoses_T_Inv, vMat_TrackerPoses_R, vMat_TrackerPoses_T, cMat_BToB_R, cMat_BToB_T, cv::CALIB_HAND_EYE_PARK);
+
+	// ④
+	cv::calibrateHandEye(vMat_RobotPoses_R_Inv, vMat_RobotPoses_T_Inv, vMat_TrackerPoses_R , vMat_TrackerPoses_T, cMat_BToB_R, cMat_BToB_T, cv::CALIB_HAND_EYE_PARK);
+	kMat_BToB_R = TramsMatToKMat(cMat_BToB_R);
+	kMat_BToB_T = TramsMatToKMat(cMat_BToB_T);
+
+	kMat_BToB_R._Print();
+	kMat_BToB_T._Print();
+
+	double randomerror = Calculate_AXXB_RandomError(cMat_TrackToRoTerm_R, cMat_TrackToRoTerm_T, cMat_BToB_R, cMat_BToB_T, _vec_inputRobotPoseMat, _vec_inputTrackerPoseMat);
 
 	KMat<double> Result(4, 4);
-	Result._assign(CaliResultR_Kmat, 1, 3, 1, 3);
-	Result(0, 3) = CaliResultT_Kmat(0, 0);
-	Result(1, 3) = CaliResultT_Kmat(1, 0);
-	Result(2, 3) = CaliResultT_Kmat(2, 0);
+	Result._assign(kMat_TrackToRoTerm_R, 1, 3, 1, 3);
+	Result(0, 3) = kMat_TrackToRoTerm_T(0, 0);
+	Result(1, 3) = kMat_TrackToRoTerm_T(1, 0);
+	Result(2, 3) = kMat_TrackToRoTerm_T(2, 0);
 	Result(3, 3) = 1;
 
 	_outputMat = Result;
-	return 0;
+
+
+	std::cout << " —————————— Cali TsaiLenz Result ———————— " << std::endl;
+	Result._Print();
+
+	// 计算标定误差
+	double avg_error = 0.0;
+	double total_error = 0.0;
+	int count = vMat_RobotPoses_R.size()-1;
+	cv::Mat CaliResult = cv::Mat::eye(4, 4, CV_64F);
+	cMat_TrackToRoTerm_R.copyTo(CaliResult(cv::Range(0, 3), cv::Range(0, 3)));
+	cMat_TrackToRoTerm_T.copyTo(CaliResult(cv::Range(0, 3), cv::Range(3, 4)));
+
+	for (int i = 0; i < count; ++i) {
+
+		cv::Mat RobotPose_i = cv::Mat::eye(4, 4, CV_64F);
+		cv::Mat RobotPose_j = cv::Mat::eye(4, 4, CV_64F);
+		vMat_RobotPoses_R[i].copyTo(RobotPose_i(cv::Range(0, 3), cv::Range(0, 3)));
+		vMat_RobotPoses_T[i].copyTo(RobotPose_i(cv::Range(0, 3), cv::Range(3, 4)));
+		vMat_RobotPoses_R[i+1].copyTo(RobotPose_j(cv::Range(0, 3), cv::Range(0, 3))); //A已求逆操作
+		vMat_RobotPoses_T[i+1].copyTo(RobotPose_j(cv::Range(0, 3), cv::Range(3, 4)));
+
+		cv::Mat TrackerPose_i = cv::Mat::eye(4, 4, CV_64F);
+		cv::Mat TrackerPose_j = cv::Mat::eye(4, 4, CV_64F);
+		vMat_TrackerPoses_R[i].copyTo(TrackerPose_i(cv::Range(0, 3), cv::Range(0, 3)));
+		vMat_TrackerPoses_T[i].copyTo(TrackerPose_i(cv::Range(0, 3), cv::Range(3, 4)));
+		vMat_TrackerPoses_R[i+1].copyTo(TrackerPose_j(cv::Range(0, 3), cv::Range(0, 3)));
+		vMat_TrackerPoses_T[i+1].copyTo(TrackerPose_j(cv::Range(0, 3), cv::Range(3, 4)));
+
+
+		// 分别得到A和B
+		//Aij = inv(Tj_gripper2base)*(Ti_gripper2base)
+		cv::Mat A_invj;
+		cv::invert(RobotPose_j, A_invj);
+		cv::Mat A_i = RobotPose_i;
+
+		//Bij=  (Tj_taget2cam)* inv(Ti_target2cam)
+		cv::Mat B_j = TrackerPose_j;
+		cv::Mat B_invi;
+		cv::invert(TrackerPose_i, B_invi);
+
+
+		cv::Mat H_A = A_invj * A_i;
+		cv::Mat H_B = B_j * B_invi;
+
+		cv::Mat H_diff =  CaliResult * H_B - H_A * CaliResult;
+
+		//// 提取旋转部分并转换为向量形式
+		//cv::Mat rvec1, rvec2;
+		//Rodrigues(H_o_g_expected(cv::Range(0, 3), cv::Range(0, 3)), rvec1);
+		//Rodrigues(H_o_g(cv::Range(0, 3), cv::Range(0, 3)), rvec2);
+
+		//double angle_error = calculateAngleBetweenVectors(rvec1, rvec2);
+		double translation_error = norm(H_diff(cv::Range(0, 3), cv::Range(3, 4)));
+
+		total_error += translation_error;
+	}
+
+	avg_error =  total_error / count;
+
+
+
+ 	return 0;
+}
+
+double MCalibration::Calculate_AXXB_RandomError(cv::Mat& _CaliTop_R, cv::Mat& _CaliTop_T, cv::Mat& _CaliBot_R, cv::Mat& _CaliBot_T, std::vector<KMat<double>>& _RobotData, std::vector<KMat<double>>& _TrackerData)
+{
+
+	double avg_error = 0.0;
+
+	int count = 8;
+
+	cv::Mat CaliResult_Top = cv::Mat::eye(4, 4, CV_64F);
+	cv::Mat CaliResult_Bot = cv::Mat::eye(4, 4, CV_64F);
+
+	_CaliTop_R.copyTo(CaliResult_Top(cv::Range(0, 3), cv::Range(0, 3)));
+	_CaliTop_T.copyTo(CaliResult_Top(cv::Range(0, 3), cv::Range(3, 4)));
+
+	_CaliBot_R.copyTo(CaliResult_Bot(cv::Range(0, 3), cv::Range(0, 3)));
+	_CaliBot_T.copyTo(CaliResult_Bot(cv::Range(0, 3), cv::Range(3, 4)));
+
+	// 转回Kmat
+	KMat<double> KMat_Top = TramsMatToKMat(CaliResult_Top);
+	KMat<double> KMat_Bot = TramsMatToKMat(CaliResult_Bot);
+
+	double total_error = 0.0;
+	for (int i = 0; i < count; ++i) {
+
+		KMat<double> test1 = _RobotData[i] * KMat_Top ;
+		test1 = test1 *( _TrackerData[i]._Inv4());
+
+		std::cout << " Matrix1  = " << std::endl;
+		test1._Print();
+
+
+		KMat<double> test2 = _RobotData[i+1] * KMat_Top;
+		test2 = test2 * _TrackerData[i+1]._Inv4();
+
+		std::cout << " Matrix2 = " << std::endl;
+		test2._Print();
+
+
+		KMat<double>errorMat = _RobotData[i] * KMat_Top - KMat_Bot * _TrackerData[i];
+		//提取平移部分
+		KMat<double>errorT(3, 1);
+		errorT(0, 0) = errorMat(0, 3);
+		errorT(1, 0) = errorMat(1, 3);
+		errorT(2, 0) = errorMat(2, 3);
+		// 计算模长
+		total_error += errorT._GetNorm();
+
+	};
+
+	avg_error = total_error / count;
+
+	return avg_error;
+
+
 }
 
 int MCalibration::Calibration_HandEye(std::vector<KMat<double>>& _vec_inputRobotPoseMat, std::vector<cv::Mat>& _vec_obCamMatR, std::vector<cv::Mat>& _vec_obCamMatT, KMat<double>& _outputMat)

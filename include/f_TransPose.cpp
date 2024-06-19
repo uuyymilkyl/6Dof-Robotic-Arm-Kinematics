@@ -31,9 +31,10 @@ KMat<double> TranPose::EulToRot_XYZ_T(KMat<double>& _EulAngle)
     KMat<double> Mat4_4(4, 4);
 
     // ½Ç¶È×ª»¡¶È
-    double a1 = _EulAngle(0, 3) / 180.0f * PI ;
-    double a2 = _EulAngle(0, 4) / 180.0f * PI;
-    double a3 = _EulAngle(0, 5) / 180.0f * PI;
+    double a1 = _EulAngle(0, 3)  ;
+    double a2 = _EulAngle(0, 4)  ;
+    double a3 = _EulAngle(0, 5)  ;
+
     Mat4_4 = {
         {cos(a2) * cos(a3),                               -cos(a2) * sin(a3)                              ,            sin(a2), _EulAngle(0, 0)},
         {sin(a1) * sin(a2) * cos(a3) + cos(a1) * sin(a3), -sin(a1) * sin(a2) * sin(a3) + cos(a1) * cos(a3), -sin(a1) * cos(a2), _EulAngle(0, 1)},
@@ -129,7 +130,7 @@ KMat<double> TranPose::VectorToRot(KMat<double>& _Vector1_3)
 KMat<double> TranPose::VectorXYZToRotTcp(KMat<double>& _VectorX, KMat<double>& _VectorY, KMat<double>& _VectorZ)
 {
     KMat<double> Mat3_3(3, 3);
- 
+
     return Mat3_3;
 }
 

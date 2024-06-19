@@ -69,9 +69,10 @@ public:
     *
     *****************************************************************************
     */
-    static int Calibration_OpenCV_TsaiLenz(std::vector<KMat<double >>& _vInputRobotPoseMat, std::vector<KMat<double>>& _vInputTrackerPoseMat, KMat<double>& _OutputMat, int numPoses);
+    static int Calibration_OpenCV_TsaiLenz(std::vector<KMat<double >>& _vInputRobotPoseMat, std::vector<KMat<double>>& _vInputTrackerPoseMat, KMat<double>& _OutputMat);
 
 
+    static double Calculate_AXXB_RandomError(cv::Mat& _CaliTop_R, cv::Mat& _CaliTop_T, cv::Mat& _CaliBot_R, cv::Mat& _CaliBot_T, std::vector<KMat<double>>& _RobotData, std::vector<KMat<double>>& _TrackerData);
     /**
     *****************************************************************************
     *  @brief  手眼标定
@@ -145,6 +146,15 @@ static inline KMat<double> Eigen2KMat(Eigen::MatrixXd &_eigenMat)
 }
 
 
+// 计算两个向量之间的夹角
+static inline double calculateAngleBetweenVectors(const cv::Mat& vec1, const cv::Mat& vec2) {
 
+    double dot_product = vec1.dot(vec2);
+    double norm_vec1 = norm(vec1);
+    double norm_vec2 = norm(vec2);
+    double cos_theta = dot_product / (norm_vec1 * norm_vec2);
+    double angle = acos(cos_theta);
+    return angle * 180.0 / CV_PI; // 角度
+}
 
 #endif // !_MJTRACKER_MCALIBRATION_H_

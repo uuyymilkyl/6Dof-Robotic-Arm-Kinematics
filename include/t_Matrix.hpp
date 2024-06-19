@@ -1,7 +1,7 @@
-/**
+ï»¿/**
 *****************************************************************************
 *	@file	t_Matrix.hpp
-*	@brief	¾ØÕóÄ£°åÀà  template of Matrix calculation
+*	@brief	çŸ©é˜µæ¨¡æ¿ç±»  template of Matrix calculation
 *
 *	@author		HuangMinYu
 *	@date		2023.12.19
@@ -16,8 +16,9 @@
 
 #include <vector>
 #include<iostream>
+#include <assert.h>
 
-const float EPSILON = 1e-12; // ¾«¶ÈãĞÖµ
+const float EPSILON = 1e-12; // ç²¾åº¦é˜ˆå€¼
 const float PI = 3.14159265358;
 
 template<typename T>
@@ -28,52 +29,54 @@ public:
 	KMat(int _nRows, int _nCols);
 	~KMat();
 
-	void operator=(const KMat<T>& _M);                                        ///< µÈÓÚ - ¾ØÕó - ¸³Öµ´Ë¾ØÕó
-	void operator=(std::initializer_list<std::initializer_list<T>> _values);  ///< µÈÓÚ - ¾ØÕó - ¸³Öµ´Ë¶şÎ¬Êı×é
-	void operator=(std::vector<std::vector<T>> _values);  ///< µÈÓÚ - ¾ØÕó - ¸³Öµ´Ë¶şÎ¬Êı×é
+	void operator=(const KMat<T>& _M);                                        ///< ç­‰äº - çŸ©é˜µ - èµ‹å€¼æ­¤çŸ©é˜µ
+	void operator=(std::initializer_list<std::initializer_list<T>> _values);  ///< ç­‰äº - çŸ©é˜µ - èµ‹å€¼æ­¤äºŒç»´æ•°ç»„
+	void operator=(std::vector<std::vector<T>> _values);  ///< ç­‰äº - çŸ©é˜µ - èµ‹å€¼æ­¤äºŒç»´æ•°ç»„
 	T& operator()(int _nRow, int _nCol);
 
 
-	KMat<T> operator+(const KMat<T>& _M);    ///< ¼Ó·¨
-	KMat<T> operator-(const KMat<T>& _M);    ///< ¼ô·¨
-	KMat<T> operator*(const KMat<T>& _M);    ///< ³Ë·¨
-	KMat<T> operator/(const KMat<T>& _M);    ///< ³ı·¨ - ¾ØÕó (³ıÒ»¸ö¾ØÕóµÈÓÚ×ó³Ë£©
-	KMat<T> operator/(T _Value);             ///< ³ı·¨ - ±¶Êı (Ëõ·Å_Value±¶£©
+	KMat<T> operator+(const KMat<T>& _M);    ///< åŠ æ³•
+	KMat<T> operator-(const KMat<T>& _M);    ///< å‰ªæ³•
+	KMat<T> operator*(const KMat<T>& _M);    ///< ä¹˜æ³•
+	KMat<T> operator/(const KMat<T>& _M);    ///< é™¤æ³• - çŸ©é˜µ (é™¤ä¸€ä¸ªçŸ©é˜µç­‰äºå·¦ä¹˜ï¼‰
+	KMat<T> operator/(T _Value);             ///< é™¤æ³• - å€æ•° (ç¼©æ”¾_Valueå€ï¼‰
 
 
-	void _assign(KMat<T>& _M, int startRow, int endRow, int startCol, int endCol);  //²¿·Ö¸³Öµ
-	void _append_row(KMat<T>& _M);   //×·¼ÓÎªĞĞ
-	void _append_col(KMat<T>& _M);   //×·¼ÓÎªÁĞ
-	//´òÓ¡
+	void _assign(KMat<T>& _M, int startRow, int endRow, int startCol, int endCol);  //éƒ¨åˆ†èµ‹å€¼
+	void _append_row(KMat<T>& _M);   //è¿½åŠ ä¸ºè¡Œ
+	void _append_col(KMat<T>& _M);   //è¿½åŠ ä¸ºåˆ—
+	//æ‰“å°
 	void _Print();
 
-	T _Det(); //Çó¾ØÕóµÄĞĞÁĞÊ½
+	T _Det(); //æ±‚çŸ©é˜µçš„è¡Œåˆ—å¼
+	T _Determina(KMat<T>& _input, int _nK); // æ±‚çŸ©é˜µè¡Œåˆ—å¼ï¼ˆè¾“å…¥é€’å½’æ·±åº¦ï¼‰
 
-	KMat<T> _Inv3(); /// <3*3¾ØÕóÇóÄæ
-	KMat<T> _Inv4(); /// <4*4¾ØÕóÇóÄæ
+	KMat<T> _Inv3(); /// <3*3çŸ©é˜µæ±‚é€†
+	KMat<T> _Inv4(); /// <4*4çŸ©é˜µæ±‚é€†
 
-	KMat<T> _Normalize(); //¹éÒ»»¯
+	double _GetNorm();
+	KMat<T> _Normalize(); //å½’ä¸€åŒ–
 
-	KMat<T> _Orthogonal(KMat<T> &_inputMat); //Õı½»»¯
+	KMat<T> _Orthogonal(KMat<T> &_inputMat); //æ­£äº¤åŒ–
 
-	KMat<T> _Trans(); ///< ¾ØÕó×ªÖÃ
+	KMat<T> _Trans(); ///< çŸ©é˜µè½¬ç½®
 
-	T _Trace(); /// < ¾ØÕóÇó¼£
+	T _Trace(); /// < çŸ©é˜µæ±‚è¿¹
 
-	//È¡Ğı×ª¾ØÕó
+	//å–æ—‹è½¬çŸ©é˜µ
 	KMat<T> _GetR();
 
-	//È¡Î»ÒÆ¾ØÕó
+	//å–ä½ç§»çŸ©é˜µ
 	KMat<T> _GetT();
 
 
-	//ÇóÏòÁ¿Ä£³¤
+	//æ±‚å‘é‡æ¨¡é•¿
 	static T _GetModuleLength(KMat<T> &_mat);
 
-	//ÇóÏòÁ¿²æ³Ë(Ö»ÔÊĞíÏòÁ¿Ê¹ÓÃ£©
+	//æ±‚å‘é‡å‰ä¹˜(åªå…è®¸å‘é‡ä½¿ç”¨ï¼‰
 	static KMat<T> _Cross(KMat<T>& _matA,KMat<T> &_matB);
 
-	//ÇóÏòÁ¿µã³Ë
+	//æ±‚å‘é‡ç‚¹ä¹˜
 	static KMat<T> _Dot(KMat<T>& _matA, KMat<T>& _matB);
 
 
@@ -98,7 +101,7 @@ inline KMat<T>::KMat(int _nRows, int _nCols)
 {
 	m_nRows = _nRows;
 	m_nCols = _nCols;
-	m_vMat.resize(_nRows, std::vector<T>(_nCols, 0)); //³õÊ¼»¯VMatrixµÄÃ¿¸övectorÄÚµÄÊıÖµ¶¼Îª0
+	m_vMat.resize(_nRows, std::vector<T>(_nCols, 0)); //åˆå§‹åŒ–VMatrixçš„æ¯ä¸ªvectorå†…çš„æ•°å€¼éƒ½ä¸º0
 }
 
 template<typename T>
@@ -174,7 +177,7 @@ inline KMat<T> KMat<T>::operator+(const KMat& _M)
 
 	if (disRows != (0) || (disCols) != (0))
 	{
-		throw std::invalid_argument("¼Ó·¨¾ØÕóÎ´¶ÔÆë");
+		throw std::invalid_argument("åŠ æ³•çŸ©é˜µæœªå¯¹é½");
 	}
 
 	KMat<T> result(newnRows, newnRows);
@@ -197,7 +200,7 @@ inline KMat<T> KMat<T>::operator-(const KMat<T>& _M)
 	int disCols = this->m_nCols - _M.m_nCols;
 	if (disRows != (0) || (disCols) != (0))
 	{
-		throw std::invalid_argument("¼õ·¨¾ØÕóÎ´¶ÔÆë");
+		throw std::invalid_argument("å‡æ³•çŸ©é˜µæœªå¯¹é½");
 	}
 
 	KMat<T> result(this->m_nRows,this->m_nCols);
@@ -276,7 +279,7 @@ inline void KMat<T>::_assign(KMat<T>& _M, int startRow, int endRow, int startCol
 {
 	if ((endRow - startRow + 1) != (_M.m_nRows) || (endCol - startCol + 1) != (_M.m_nCols))
 	{
-		throw std::invalid_argument("¾ØÕóĞĞÁĞÊ½»òÊäÈëË÷Òı³¬ÏŞ");
+		throw std::invalid_argument("çŸ©é˜µè¡Œåˆ—å¼æˆ–è¾“å…¥ç´¢å¼•è¶…é™");
 	}
 
 	for (int i = 0; i < _M.m_nRows; ++i)
@@ -316,13 +319,33 @@ inline void KMat<T>::_append_col(KMat<T>& _M)
 template<typename T>
 inline KMat<T> KMat<T>::_Inv3()
 {
-	KMat<T> matT;
-	if (m_nCols != 3 && m_nRows != 3)
-	{
-		throw std::invalid_argument("¾ØÕó²»Îª3x3");
-	}
+	assert(m_nRows == 3);
+	assert(m_nCols == 3);
 
+	KMat<T> matT(m_nRows, m_nCols);
 
+	T uint_matrix_1((this->m_vMat[1][1] * this->m_vMat[2][2] - this->m_vMat[2][1] * this->m_vMat[1][2]));
+	T uint_matrix_2((this->m_vMat[1][0] * this->m_vMat[2][2] - this->m_vMat[1][2] * this->m_vMat[2][0]));
+	T uint_matrix_3((this->m_vMat[1][0] * this->m_vMat[2][1] - this->m_vMat[1][1] * this->m_vMat[2][0]));
+
+	T det(this->m_vMat[0][0] * uint_matrix_1
+		- this->m_vMat[0][1] * uint_matrix_2
+		+ this->m_vMat[0][2] * uint_matrix_3);
+
+	if (det == 0)
+		return matT;
+
+	T invdet(1.0 / det);
+
+	matT.m_vMat[0][0] = (uint_matrix_1 * invdet);
+	matT.m_vMat[0][1] = -(this->m_vMat[0][1] * this->m_vMat[2][2] - this->m_vMat[0][2] * this->m_vMat[2][1]) * invdet;
+	matT.m_vMat[0][2] = (this->m_vMat[0][1] * this->m_vMat[1][2] - this->m_vMat[0][2] * this->m_vMat[1][1]) * invdet;
+	matT.m_vMat[1][0] = -uint_matrix_2 * invdet;
+	matT.m_vMat[1][1] = (this->m_vMat[0][0] * this->m_vMat[2][2] - this->m_vMat[0][2] * this->m_vMat[2][0]) * invdet;
+	matT.m_vMat[1][2] = -(this->m_vMat[0][0] * this->m_vMat[1][2] - this->m_vMat[1][0] * this->m_vMat[0][2]) * invdet;
+	matT.m_vMat[2][0] = (this->m_vMat[1][0] * this->m_vMat[2][1] - this->m_vMat[2][0] * this->m_vMat[1][1]) * invdet;
+	matT.m_vMat[2][1] = -(this->m_vMat[0][0] * this->m_vMat[2][1] - this->m_vMat[2][0] * this->m_vMat[0][1]) * invdet;
+	matT.m_vMat[2][2] = (this->m_vMat[0][0] * this->m_vMat[1][1] - this->m_vMat[1][0] * this->m_vMat[0][1]) * invdet;
 
 	return matT;
 }
@@ -330,7 +353,77 @@ inline KMat<T> KMat<T>::_Inv3()
 template<typename T>
 inline KMat<T> KMat<T>::_Inv4()
 {
-	return KMat<T>();
+	//å¦‚æœçŸ©é˜µå¤§å°ä¸ä¸º4x4è‡ªåŠ¨é€€å‡º
+	assert(m_nRows == 4);
+	assert(m_nCols == 4);
+
+	KMat<T> matT(m_nRows, m_nCols);
+	// è®¡ç®—è¡Œåˆ—å¼
+	T det = _Determina(*this, 4);
+
+	//
+	assert(det != 0);
+
+	KMat<T> invMatrix(4, 4);
+
+	// è®¡ç®—æ¯ä¸ªå…ƒç´ çš„ä»£æ•°ä½™å­å¼
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			KMat<T> subMatrix(3, 3); // åˆ›å»ºä¸€ä¸ª3x3çš„å­çŸ©é˜µ
+
+			// å¡«å……å­çŸ©é˜µ
+			int subI = 0;
+			for (int row = 0; row < 4; row++)
+			{
+				if (row == i)
+					continue;
+				int subJ = 0;
+				for (int col = 0; col < 4; col++)
+				{
+					if (col == j)
+						continue;
+					subMatrix(subI, subJ) = m_vMat[row][col];
+					subJ++;
+				}
+				subI++;
+			}
+
+			// è®¡ç®—ä»£æ•°ä½™å­å¼
+			T cofactorDet = subMatrix._Determina(subMatrix, 3);
+			T cofactor = ((i + j + 1) % 2 == 0 ? cofactorDet : -cofactorDet);
+
+			// æ ¹æ®ä½ç½®è®¡ç®—é€†çŸ©é˜µå…ƒç´ 
+			invMatrix(j, i) = cofactor;
+		}
+	}
+
+	// è®¡ç®—é€†çŸ©é˜µçš„æ¯ä¸ªå…ƒç´ 
+	T invDet = static_cast<T>(1) / det;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			invMatrix(i, j) *= invDet;
+		}
+	}
+
+	return invMatrix;
+
+}
+
+template<typename T>
+inline double KMat<T>::_GetNorm()
+{
+	double result = 0.00;
+	for (int i = 0; i < m_nRows; i++)
+	{
+		for (int j = 0; j < m_nCols; j++)
+		{
+			result += pow(m_vMat[i][j], 2);
+		}
+	}
+	result = result / (m_nCols * m_nRows);
+	return result;
 }
 
 template<typename T>
@@ -355,7 +448,7 @@ inline KMat<T> KMat<T>::_Orthogonal(KMat<T>& _inputMat)
 		rotateMat = _inputMat;
 	}
 
-	// ²½Öè1£º½«µÚÒ»¸öÏòÁ¿µ¥Î»»¯
+	// æ­¥éª¤1ï¼šå°†ç¬¬ä¸€ä¸ªå‘é‡å•ä½åŒ–
 	for (int i = 0; i < 3; ++i)
 	{
 		T colLength = 0;
@@ -372,7 +465,7 @@ inline KMat<T> KMat<T>::_Orthogonal(KMat<T>& _inputMat)
 
 	}
 
-	// ²½Öè2£º¶ÔÊ£ÓàÏòÁ¿½øĞĞÕı½»»¯
+	// æ­¥éª¤2ï¼šå¯¹å‰©ä½™å‘é‡è¿›è¡Œæ­£äº¤åŒ–
 	for (int k = 1; k < 3; ++k)
 	{
 		for (int i = 0; i < 3; ++i)
@@ -416,7 +509,7 @@ template<typename T>
 inline T KMat<T>::_Trace()
 {
 	if (m_nRows != m_nCols) {
-		throw std::invalid_argument("¾ØÕó·Ç·½Õë£¬²»¿ÉÇó¼£.");
+		throw std::invalid_argument("çŸ©é˜µéæ–¹é’ˆï¼Œä¸å¯æ±‚è¿¹.");
 	}
 	T result;
 	for (int i = 0; i < m_nCols; i++)
@@ -471,7 +564,7 @@ inline KMat<T> KMat<T>::_Cross(KMat<T>& _matA, KMat<T>& _matB)
 {
 	KMat<T> tResult(_matA.m_nRows, _matA.m_nCols);
 	if (_matA.m_nRows == 3)
-	{ //ÊúÏòÏòÁ¿
+	{ //ç«–å‘å‘é‡
 
 		tResult(0, 0) = _matA(1, 0) * _matB(2, 0) - _matA(2, 0) * _matB(1, 0);
 		tResult(1, 0) = _matA(2, 0) * _matB(0, 0) - _matA(0, 0) * _matB(2, 0);
@@ -479,7 +572,7 @@ inline KMat<T> KMat<T>::_Cross(KMat<T>& _matA, KMat<T>& _matB)
 	}
 	if (_matA.m_nCols == 3)
 	{
-		//ºáÏòÏòÁ¿
+		//æ¨ªå‘å‘é‡
 		tResult(0, 1) = _matA(0,1) * _matB(0, 2) - _matA(0,2) * _matB( 0,1);
 		tResult(0, 2) = _matA(0,2) * _matB(0, 0) - _matA(0,0) * _matB( 0,2);
 		tResult(0, 3) = _matA(0,0) * _matB(0, 1) - _matA(0,1) * _matB( 0,0);
@@ -513,7 +606,7 @@ inline T KMat<T>::_Det()
 {
 
 	if (m_nRows != m_nCols) {
-		throw std::invalid_argument("¾ØÕó·Ç·½Õë£¬²»¿ÉÇóĞĞÁĞÊ½.");
+		throw std::invalid_argument("çŸ©é˜µéæ–¹é’ˆï¼Œä¸å¯æ±‚è¡Œåˆ—å¼.");
 	}
 
 	if (m_nRows == 1)
@@ -525,9 +618,11 @@ inline T KMat<T>::_Det()
 		return m_vMat[0][0] * m_vMat[1][1] - m_vMat[0][1] * m_vMat[1][0];
 	}
 	else {
+		// éå†ç¬¬ä¸€è¡Œçš„å…ƒç´ 
 		T det = 0;
 		for (int i = 0; i < m_nRows; i++)
 		{
+			// è®¡ç®—ä»£æ•°ä½™å­å¼
 			KMat<T> subMat(m_nRows - 1, m_nCols - 1);
 			for (int j = 1; j < m_nRows; j++) {
 				for (int k = 0; k < m_nCols; k++) {
@@ -539,11 +634,58 @@ inline T KMat<T>::_Det()
 					}
 				}
 			}
+
+			//è®¡ç®—ç¬¦å·ç³»æ•°
 			T sign = (i % 2 == 0) ? 1 : -1;
+
+			// ç´¯åŠ æ¯ä¸ªå…ƒç´ ä¸å…¶ä»£æ•°ä½™å­å¼è¡Œåˆ—å¼çš„ä¹˜ç§¯
 			det += sign * m_vMat[0][i] * subMat._Det();
 		}
 		return det;
 	}
+}
+
+template<typename T>
+inline T KMat<T>::_Determina(KMat<T>& _input, int _nK)
+{
+	assert(_input.m_nRows = _input.m_nCols);
+
+	if (_input.m_nRows == 1)
+	{
+		return _input(0, 0);
+	}
+
+	T det = 0;
+
+	for (int i = 0; i < _input.m_nCols; ++i)
+	{
+
+		KMat<T> cofactorMat(_input.m_nRows - 1, _input.m_nCols - 1);
+		int r = 0;
+		for (int j = 0; j < _input.m_nRows; ++j)
+		{
+			int c = 0;
+			for (int k = 0; k < _input.m_nCols; ++k)
+			{
+				if (j != 0 && k != i) {
+					cofactorMat(r, c) = _input(j, k);
+					++c;
+				}
+			}
+			if (j != 0)
+			{
+				++r;
+			}
+		}
+
+		T cofactorDet = _Determina(cofactorMat, _nK + 1);
+
+		T sign = (_nK + i + 1) % 2 == 0 ? 1 : -1;
+
+		det += sign * _input(0, i) * cofactorDet;
+	}
+
+	return det;
 }
 
 

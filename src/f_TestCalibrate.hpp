@@ -9,6 +9,12 @@ public:
 	tRoboticCaliTest();
 	~tRoboticCaliTest();
 
+
+	void CaliTCP();
+	void CaliTCF();
+	void CaliTsaiLenz();
+
+
 public :
 		std::vector<KMat<double>> TCP_Kmats;
 		std::vector<KMat<double>> TCF_TrackerKmats;

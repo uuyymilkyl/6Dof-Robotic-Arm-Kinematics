@@ -2,138 +2,263 @@
 
 tRoboticCaliTest::tRoboticCaliTest()
 {
-	KMat<double> TCP_Kmat1, TCP_Kmat2, TCP_Kmat3, TCP_Kmat4,TCP_Kmat5,TCP_Kmat6,
-		TCF_TrackerKmat1, TCF_TrackerKmat2, TCF_TrackerKmat3,
-		TCF_RobotKmat1, TCF_RobotKmat2, TCF_RobotKmat3,
-		Tsai_TrackerKmat1, Tsai_TrackerKmat2, Tsai_TrackerKmat3, Tsai_TrackerKmat4, Tsai_TrackerKmat5, Tsai_TrackerKmat6,
-		Tsai_RobotKmat1, Tsai_RobotKmat2, Tsai_RobotKmat3, Tsai_RobotKmat4, Tsai_RobotKmat5, Tsai_RobotKmat6(4, 4);
+
+	// 校对标定情况
+	KMat<double>OriginalDataPoint, ResultDataPoint(6, 1);
+	/*OriginalDataPoint = {{-343.867,   444.850,  442.775, 166.825,  34.407,-66.928}};
+	ResultDataPoint =   { {593.7, 169.5, 809.3,179.5,6.4 ,-3.9} };
+
+
+	m_ResultDataMat = TranPose::EulToRot_XYZ_T(ResultDataPoint);
+	m_ResultDataMat._Print();
+
+	CalculateTraslate();*/
+
+	OriginalDataPoint = { {1023.8,  -138.6,  520.8, 172.5,  -3.2,-73.7} };
+	m_OriginalDataMat = TranPose::EulToRot_XYZ_T(OriginalDataPoint);
+	std::cout << " example :" << std::endl;
+	m_OriginalDataMat._Print();
+	//CaliTCP();
+	//CaliTCF();
+	CaliTsaiLenz();
+
+
+}
+
+tRoboticCaliTest::~tRoboticCaliTest()
+{
+}
+
+void tRoboticCaliTest::CaliTCP()
+{
+	KMat<double> TCP_Kmat1, TCP_Kmat2, TCP_Kmat3, TCP_Kmat4, TCP_Kmat5, TCP_Kmat6(4, 4);
+
 	TCP_Kmat1 = {
-		{0.694019 ,0.442048, 0.568271 ,- 23.7695},
-		{0.68138, - 0.148386, - 0.71673, 686.213},
-		{-0.232506 ,0.884633, - 0.404185, 179.461},
+		{0.394525,  0.55654 ,0.731172, -56.1792},
+		{0.805097, -0.592903,0.0168806, 579.16},
+		{0.442909,  0.582005,-0.681984, 200.55},
 		{0, 0, 0, 1 }
 	};
 	TCP_Kmat2 = {
-		{0.225718 ,0.621845 ,0.749907 ,- 37.2059},
-		{0.929632 ,0.0926582, - 0.35665 ,658.867},
-		{-0.291266, 0.77764 ,- 0.557172, 190.716},
+		{0.132378, 0.53522 , 0.834276 , -69.6368},
+		{0.973429,-0.228861,-0.00763469,612.503},
+		{0.186847, 0.813119,-0.551295,  202.039},
 		{0,0,0,1} };
+
 	TCP_Kmat3 = {
-		{0.574796, 0.558166 ,0.598381 ,- 21.4239},
-		{0.792364,-0.562282 ,- 0.23664, 589.992},
-		{0.204374, 0.610155, - 0.765468, 204.884},
+		{0.732232, 0.462192, 0.500215, -32.1872},
+		{0.613321,-0.766822,-0.189266, 594.011},
+		{0.296099, 0.445379,-0.844963, 210.372},
 		{0,0,0,1} };
 	TCP_Kmat4 = {
-		{0.738743 ,0.329973 ,0.587687 ,- 36.4214},
-		{0.529158 ,- 0.824003 ,- 0.202511 ,566.041},
-		{0.417433 ,0.460583 ,- 0.783335, 196.827},
+		{0.110109, 0.441541,  0.890459, -85.1218},
+		{0.975008,-0.221919, -0.010523, 613.638},
+		{0.192963, 0.869364, -0.454942, 194.608},
 		{0,0,0,1} };
 
 	TCP_Kmat5 = {
-		{0.741537 ,0.657712 ,0.132428 ,49.6246},
-		{ 0.653307 ,- 0.752793, 0.0805688, 521.599},
-		{0.152682 ,0.0267715, - 0.987913 ,166.411},
-		{0,0,0,1 }};
+		{ 0.798567,  0.372671,  0.472661, -31.4279},
+		{ 0.592018, -0.344553, -0.728559, 701.008},
+		{-0.108655,  0.861626,  0.495776, 198.91},
+		{0,0,0,1 } };
 
-	TCP_Kmat6 = {
-	{ 0.567723,  0.406011,   0.716132, -49.1352},
-	{ 0.790577, - 0.511436, - 0.336782, 606.48},
-	{ 0.229518, 0.757356 ,- 0.611337, 197.248},
-	{ 0,0,0,1 } };
 
 
 	TCP_Kmats.push_back(TCP_Kmat1);
 	TCP_Kmats.push_back(TCP_Kmat2);
 	TCP_Kmats.push_back(TCP_Kmat3);
 	TCP_Kmats.push_back(TCP_Kmat4);
-	TCP_Kmats.push_back(TCP_Kmat5);
+	//TCP_Kmats.push_back(TCP_Kmat5);
 	//TCP_Kmats.push_back(TCP_Kmat6);
 
+	TestCalculateTcp();
 
-	//------------------ TCF 测试数据
-	TCF_TrackerKmat1 = { {  0.386453, 0.785187 ,0.483876 ,-343.987},
-						  { 0.921529,-0.307146,-0.237584, 430.377},
-						  {-0.0379275,0.537721,-0.842269, 341.704},
+}
+
+void tRoboticCaliTest::CaliTCF()
+{
+	KMat<double>TCF_TrackerKmat1, TCF_TrackerKmat2, TCF_TrackerKmat3,TCF_RobotKmat1, TCF_RobotKmat2, TCF_RobotKmat3(4, 4);
+
+	//------------------ TCF 测试数据 -----------------
+	TCF_TrackerKmat1 = { {  0.3538, 0.728994 ,0.585997 ,-335.635},
+						  { 0.935168 ,-0.287053 ,-0.207515,431.859},
+						  { 0.016935 ,  0.621424 ,-0.783291,436.962},
 						  { 0, 0, 0, 1} };
-	TCF_TrackerKmat2 = {  { 0.39047 ,  0.783225,  0.483831,-199.838},
-						  { 0.920165, -0.315594, -0.231726, 384.86},
-						  {-0.0287993, 0.535686, -0.843926, 339.219},
+	TCF_TrackerKmat2 = { { 0.358188 , 0.724568 , 0.588815 ,-194.48},
+						  { 0.93346 ,-0.290625 ,-0.210214, 385.777},
+						  { 0.01881 ,  0.624931 ,-0.780453, 438.323},
 						  {0,0,0,1} };
-	TCF_TrackerKmat3 = {  { 0.386351,  0.785949,  0.482719 , -341.528},
-						  { 0.921305, -0.303916, -0.242552  , 431.547},
-						  {-0.0439275 ,0.538442, -0.841517 , 484.882},
+	TCF_TrackerKmat3 = { {0.347378 ,0.733421 ,0.584313 ,-334.891},
+						  {0.937584 ,-0.282483, -0.202831, 434.942},
+						  {0.0162981, 0.618302, -0.785772, 583.212},
 						  {0,0,0,1} };
-	KMat<double> TCF_RobotPoint1, TCF_RobotPoint2, TCF_RobotPoint3;
 
-	TCF_RobotPoint1 = { {600.000,0.000,800.000,180.0,0.000,180.0} };
-	TCF_RobotPoint2 = { {750.000,0.000,800.000,180.0,0.000,180.0} };
-	TCF_RobotPoint3 = { {600.000,0.000,950.000,180.0,0.000,180.0} };
-	TCF_RobotKmat1 = TranPose::EulToRot_ZYX_T(TCF_RobotPoint1);
-	TCF_RobotKmat2 = TranPose::EulToRot_ZYX_T(TCF_RobotPoint2);
-	TCF_RobotKmat3 = TranPose::EulToRot_ZYX_T(TCF_RobotPoint2);
 
 	TCF_TrackerKmats.push_back(TCF_TrackerKmat1);
 	TCF_TrackerKmats.push_back(TCF_TrackerKmat2);
 	TCF_TrackerKmats.push_back(TCF_TrackerKmat3);
 
+	TestCalculateTcf();
+}
+
+void tRoboticCaliTest::CaliTsaiLenz()
+{
+	KMat<double>
+		Tsai_TrackerKmat1, Tsai_TrackerKmat2, Tsai_TrackerKmat3, Tsai_TrackerKmat4, Tsai_TrackerKmat5, Tsai_TrackerKmat6, Tsai_TrackerKmat7, Tsai_TrackerKmat8, Tsai_TrackerKmat9, Tsai_TrackerKmat10,Tsai_TrackerKmat11, Tsai_TrackerKmat12,
+		Tsai_RobotKmat1, Tsai_RobotKmat2, Tsai_RobotKmat3, Tsai_RobotKmat4, Tsai_RobotKmat5, Tsai_RobotKmat6,Tsai_RobotKmat7,Tsai_RobotKmat8, Tsai_RobotKmat9, Tsai_RobotKmat10,Tsai_RobotKmat11,Tsai_RobotKmat12 (4, 4);
+
+
 	// --------------- TsaiLenz数据 ---------------
-	KMat<double> Tsai_RobotPoint1, Tsai_RobotPoint2, Tsai_RobotPoint3, Tsai_RobotPoint4, Tsai_RobotPoint5, Tsai_RobotPoint6(6, 1);
-	Tsai_RobotPoint1 = { {464.800,130.240,800.000,-161.588,  0.000,-179.982} };
-	Tsai_RobotPoint2 = { {450.000,100.000,800.000, 175.543,-11.370,179.139} };
-	Tsai_RobotPoint3 = { {547.000, 50.000,830.000,-175.529,  9.309,149.469} };
-	Tsai_RobotPoint4 = { {547.000,130.200,745.000, 182.706, 23.830,151.330} };
-	Tsai_RobotPoint5 = { {574.000,130.000,776.300, 167.332,-16.747,179.139} };
-	Tsai_RobotPoint6 = { {703.000,222.250,821.250,-152.047,  15.760,-154.952} };
+	// 处理机器人信息
+	// KMat<double> Tsai_RobotPoint1, Tsai_RobotPoint2, Tsai_RobotPoint3, Tsai_RobotPoint4, Tsai_RobotPoint5, Tsai_RobotPoint6(6, 1);
 
-	Tsai_RobotKmat1 = TranPose::EulToRot_XYZ_T(Tsai_RobotPoint1);
-	Tsai_RobotKmat2 = TranPose::EulToRot_XYZ_T(Tsai_RobotPoint2);
-	Tsai_RobotKmat3 = TranPose::EulToRot_XYZ_T(Tsai_RobotPoint3);
-	Tsai_RobotKmat4 = TranPose::EulToRot_XYZ_T(Tsai_RobotPoint4);
-	Tsai_RobotKmat5 = TranPose::EulToRot_XYZ_T(Tsai_RobotPoint5);
-	Tsai_RobotKmat6 = TranPose::EulToRot_XYZ_T(Tsai_RobotPoint6);
-
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat1);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat2);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat3);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat4);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat5);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat6);
-
+	// 1 ---------------
 	Tsai_TrackerKmat1 = {
-	{ 0.321464, 0.698777, 0.63904 ,-453.687 },
-	{ 0.884682, - 0.46226, 0.0604391, 553.284},
-	{ 0.337636 ,0.545918 ,- 0.766795, 486.37},
+	{0.102182,  0.465705, 0.879021 ,-253.679},
+	{0.878413, - 0.455153, 0.14569, 578.768},
+	{0.468602, 0.760474, - 0.449545, 383.555},
 	{ 0,0,0,1 }
 	};
+	Tsai_RobotKmat1 = {
+	{ -0.934294, -0.214328, 0.284883, 731.531 },
+	{ -0.0493643, 0.869181, 0.492024, 273.758},
+	{ -0.353069,  0.445632,- 0.822651,799.878},
+	{ 0,0,0,1 }
+	};
+	// 2 ---------------
 	Tsai_TrackerKmat2 = {
-	{0.324365, 0.865717, 0.381211 ,-423.263 },
-	{0.943211, -0.265454, - 0.199722, 592.262 },
-	{-0.0717091,0.424345 ,- 0.902657 ,433.012},
+	{0.712843, 0.451156, 0.536949, - 54.6384},
+	{0.701141, - 0.440952, - 0.560324, 621.381},
+	{-0.0160247, 0.775899, - 0.630653, 171.259},
 	{ 0,0,0,1 }
 	};
+	Tsai_RobotKmat2 = {
+	{-0.873376, 0.44687, 0.193703, 783.041},
+	{ 0.431304, 0.894374, - 0.118626, 241.585},
+	{-0.226253, - 0.0200603, - 0.973862, 633.949},
+	{ 0,0,0,1 }
+	};
+	// 3 ---------------
 	Tsai_TrackerKmat3 = {
-	{-0.179502, 0.679148, 0.711714, - 498.249 },
-	{ 0.983621, 0.111867, 0.141332 ,495.151 },
-	{ 0.0163677, 0.725426, - 0.688105, 465.088 },
+	{0.0746504, 0.404345 ,0.911555, - 301.09 },
+	{0.97714 ,- 0.212208, 0.0128751, 408.026 },
+	{0.198855, 0.890879, - 0.408401, 338.253},
 	{ 0,0,0,1 }
 	};
+	Tsai_RobotKmat3 = {
+	{-0.869773, -0.259044 , 0.419989, 766.725 },
+	{-0.150072,  0.949672 , 0.274956, 48.7847 },
+	{-0.470078,  0.176121 ,-0.864875, 791.844},
+	{ 0,0,0,1 }
+	};
+	// 4 -----------------
 	Tsai_TrackerKmat4 = {
-	{-0.112849, 0.496912, 0.860432, - 503.57 },
-	{ 0.986601, 0.15873, 0.0377281, 590.179},
-	{-0.117829, 0.853161, - 0.508166 ,345.184 },
-	{ 0.00   ,  0.00    ,  0.00    ,    1.00}
+	{ 0.799715, - 0.146518, 0.582228, - 268.216},
+	{ 0.140151, - 0.897414, - 0.418338, 21.5188},
+	{ 0.583793,   0.41615, - 0.69714, 381.101},
+	{ 0 ,  0  ,  0  ,   1}
 	};
+	Tsai_RobotKmat4 = {
+	{-0.547889, 0.695814, 0.464393 ,748.662},
+	{ 0.83464 , 0.417241, 0.359563, -233.087},
+	{ 0.0564377, 0.584608, - 0.809351, 756.477},
+	{ 0 ,  0  ,  0  ,   1}
+	};
+	// 5 ----------------
+
 	Tsai_TrackerKmat5 = {
-	{-0.205428, 0.941319, 0.267803, - 364.096 },
-	{0.977649, 0.209888, 0.012191, 583.304},
-	{-0.0447328, 0.264321, - 0.963397, 407.713},
+	{ 0.575991, 0.289486, 0.764482, - 93.2743 },
+	{ 0.73527, - 0.592149, - 0.329753 ,343.201},
+	{ 0.357228, 0.752035, - 0.553923, 436.597},
 	{ 0,0,0,1 }
 	};
-	Tsai_TrackerKmat6 = {
-	{ 0.619068 ,0.308234 ,0.72232, - 185.987 },
-	{ 0.565417 ,-0.813254, - 0.137556, 521.775},
-	{ 0.54503,  0.493568 , - 0.67774,  518.086},
+	Tsai_RobotKmat5 = {
+	{ -0.874529, 0.294804, 0.385085, 883.745 },
+	{ 0.396438 , 0.891927, 0.217493, 28.4085},
+	{ -0.27935 , 0.342868,-0.896887, 855.462},
 	{ 0,0,0,1 }
+	};
+	// 6 ---------------
+
+	Tsai_TrackerKmat6 = {
+	{ 0.740773, 0.56693, 0.36034, - 41.8169},
+	{ 0.606015, - 0.795433, 0.00564976, 497.283},
+	{ 0.289829, 0.214186, - 0.932804, 307.981},
+	{ 0,0,0,1 }
+	};
+	Tsai_RobotKmat6 = {
+	{ -0.851316 , 0.492557, -0.180687,749.932},
+	{  0.373208 , 0.810588,  0.45129, 248.454 },
+	{  0.368749 , 0.316757, -0.873893, 716.921},
+	{ 0,0,0,1 }
+	};
+
+	// 7  ---------------
+
+	Tsai_TrackerKmat7 = {
+	{ 0.826743, 0.183496, 0.531813, - 247.438},
+	{ 0.362014, - 0.897116, - 0.253238 ,184.215 },
+	{ 0.430629,  0.401886,  - 0.808113,  340.58},
+	{ 0,0,0,1 }
+	};
+	Tsai_RobotKmat7 = {
+	{-0.738969 , 0.643714,  0.198889, 686.164},
+	{ 0.658255 , 0.626884, 0.416794,  -91.0056 },
+	{ 0.143616 , 0.438917, - 0.886976, 726.002},
+	{ 0,0,0,1 }
+	};
+
+	// 8  ---------------
+
+	Tsai_TrackerKmat8 = {
+	{ 0.139826, 0.517739, 0.844035, - 355.728},
+	{ 0.910173, - 0.40287, 0.0963416, 669.323 },
+	{ 0.389916, 0.754746, - 0.527564, 384.14},
+	{ 0,0,0,1 }
+	};
+	Tsai_RobotKmat8 = {
+	{ 0.950692  ,-0.182181, 0.250988, 597.252},
+	{ -0.0647175, 0.908002, 0.413938, 309.412},
+	{ -0.303309, 0.377284, - 0.87502, 800},
+	{ 0,0,0,1 }
+	};
+
+	// 9  ---------------
+
+	Tsai_TrackerKmat9 = {
+	{ 0.697688, 0.541589 , 0.468949, - 412.132},
+	{ 0.702978, - 0.643683, - 0.30248, 351.442 },
+	{ 0.138035,  0.540698, - 0.829815, 314.314},
+	{ 0,0,0,1 }
+	};
+	Tsai_RobotKmat9 = {
+	{ -0.911776, 0.410685, 0.001535 ,488.501},
+	{  0.405582, 0.899848, 0.160553, - 65.9095 },
+	{  0.0645553, 0.147011, - 0.987026, 731.221},
+	{ 0,0,0,1 }
+	};
+
+	// 10  ---------------
+
+	Tsai_TrackerKmat10 = {
+	{ 0.70582,   0.528173,  0.472071,  - 239.959},
+	{ 0.623938, - 0.779072 ,- 0.0612273, 514.81 },
+	{ 0.335438,  0.337758 , - 0.879432, 324.94},
+	{ 0,0,0,1 }
+	};
+	Tsai_RobotKmat10 = {
+	{ -0.892489, 0.447237, - 0.0586803, 588},
+	{  0.38378, 0.821253,   0.422205, 199.999},
+	{  0.237017, 0.354293, - 0.904599, 723},
+	{ 0,0,0,1 }
+	};
+
+	// 11 -------------
+	Tsai_TrackerKmat11 = {
+		{0.706591, 0.526781, 0.472473 ,- 239.962},
+		{0.622918, - 0.779816, - 0.0621342, 514.621},
+		{0.335711, 0.338216, - 0.879152, 324.859},
+		{0, 0, 0 ,1}
 	};
 
 	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat1);
@@ -142,44 +267,36 @@ tRoboticCaliTest::tRoboticCaliTest()
 	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat4);
 	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat5);
 	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat6);
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat7);
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat8);
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat9);
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat10);
+	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat11);
 
-	/*for (int i = 0; i < TCP_Kmats.size(); i++)
-	{
-		TCP_Kmats[i] = TCP_Kmats[i]._Orthogonal(TCP_Kmats[i]);
-	}
-	for (int i = 0; i < TCF_TrackerKmats.size(); i++)
-	{
-		TCF_TrackerKmats[i] = TCF_TrackerKmats[i]._Orthogonal(TCF_TrackerKmats[i]);
-	}
-	for (int i = 0; i < Tsai_RobotKmats.size(); i++)
-	{
-		Tsai_RobotKmats[i] = Tsai_RobotKmats[i]._Orthogonal(Tsai_RobotKmats[i]);
-		Tsai_TrackerKmats[i] = Tsai_TrackerKmats[i]._Orthogonal(Tsai_TrackerKmats[i]);
-	}*/
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat1);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat2);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat3);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat4);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat5);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat6);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat7);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat8);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat9);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat10);
+	Tsai_RobotKmats.push_back(Tsai_RobotKmat11);
+
+
+
+
 	KMat<double> zeroMat(4, 4);
 	m_OriginalDataMat = zeroMat;
 	m_ResultDataMat = zeroMat;
 	m_RobotBaseToTrackerBase = zeroMat;
 	m_TrackerToTerminalMat = zeroMat;
 
-	//TestCalculateTcp();
-	//TestCalculateTcf();
+
 	TestCalculateTsaiLenzForRobot();
 
-	// 校对标定情况
-	// 记录原始数据点
-	KMat<double>OriginalDataPoint,ResultDataPoint(6, 1);
-	OriginalDataPoint = { {  -7.815,   9.259,  59.485,146.404,  0.924,-103.743} };
-	ResultDataPoint =   { {1022.202,-137.347, 529.019,147.840,-22.749 ,172.770} };
-
-	m_OriginalDataMat = TranPose::EulToRot_ZYX_T(OriginalDataPoint);
-	m_ResultDataMat = TranPose::EulToRot_ZYX_T(ResultDataPoint);
-
-	CalculateTraslate();
-}
-
-tRoboticCaliTest::~tRoboticCaliTest()
-{
 }
 
 void tRoboticCaliTest::TestCalculateTcp()
@@ -206,7 +323,8 @@ void tRoboticCaliTest::TestCalculateTcf()
 void tRoboticCaliTest::TestCalculateTsaiLenzForRobot()
 {
 	KMat<double> result;
-	MCalibration::Calibration_OpenCV_TsaiLenz(Tsai_RobotKmats, Tsai_TrackerKmats, result, 6);
+	// 使用TsaiLenz算法计算相对手眼矩阵 输入：机器人矩阵，追踪器矩阵，结果，数据量
+	MCalibration::Calibration_OpenCV_TsaiLenz(Tsai_RobotKmats, Tsai_TrackerKmats, result);
 	result._Print();
 	m_RobotBaseToTrackerBase = result;
 }
