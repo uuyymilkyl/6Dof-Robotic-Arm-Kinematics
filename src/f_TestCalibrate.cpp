@@ -2,25 +2,65 @@
 
 tRoboticCaliTest::tRoboticCaliTest()
 {
+	KMat<double> zeroMat3(3, 3);
+	m_TermR = zeroMat3;
 
 	// 校对标定情况
-	KMat<double>OriginalDataPoint, ResultDataPoint(6, 1);
-	/*OriginalDataPoint = {{-343.867,   444.850,  442.775, 166.825,  34.407,-66.928}};
-	ResultDataPoint =   { {593.7, 169.5, 809.3,179.5,6.4 ,-3.9} };
-
+	KMat<double>BaseToTrackBase, OriginalDataPoint, TrackToTerm_TR, TrackToTerm_R, ResultDataPoint_Cal1,Cal2,Cal3(4, 4);
+	KMat<double>ResultDataPoint(1,3);
+	/*OriginalDataPoint = {{-343.867,   444.850,  442.775, 166.825,  34.407,-66.928}};*/
+	ResultDataPoint =   { {685.801,559.705,588.637,174.598,0.000,-179.997} };
 
 	m_ResultDataMat = TranPose::EulToRot_XYZ_T(ResultDataPoint);
 	m_ResultDataMat._Print();
 
-	CalculateTraslate();*/
+	BaseToTrackBase = {
+		              {0.9603, -0.2788, -0.00045949 ,1019.4},
+					  {0.286337, 0.9603 ,-0.0051715, -156.318},
+					  {0.0002965, 0.000762, 0.99999, 616.76},
+					  {0,0,0,1} };
 
-	OriginalDataPoint = { {1023.8,  -138.6,  520.8, 172.5,  -3.2,-73.7} };
-	m_OriginalDataMat = TranPose::EulToRot_XYZ_T(OriginalDataPoint);
-	std::cout << " example :" << std::endl;
-	m_OriginalDataMat._Print();
+
+	OriginalDataPoint = { {0.331347, 0.770632, 0.544367 ,- 133.485},
+		                  {0.937035, - 0.201304, - 0.285381, 807.88},
+		                  {-0.11034, 0.604651, - 0.788811, 1434.12},
+		 {0,0,0, 1} };
+
+	TrackToTerm_TR = { {0.0626684, -0.997985, -0.010281 ,2.5216},
+		{0.791415,  0.0435895, 0.606124,-82.336},
+		{0.610737 ,0.000186942, -0.79406,133.55},
+		{0,0,0,1}
+	};
+
+	TrackToTerm_R= {   {0.0626684, - 0.997985, - 0.010281 ,0},
+					  {0.791415,   0.0435895, 0.606124, 0},
+					  {0.610737 ,0.000186942, - 0.79406, 0},
+					  {0,0,0,1} };
+
+	ResultDataPoint_Cal1 = BaseToTrackBase * OriginalDataPoint;
+	Cal2 = ResultDataPoint_Cal1 * TrackToTerm_TR;
+	//m_OriginalDataMat = TranPose::EulToRot_XYZ_T(OriginalDataPoint);
+	//std::cout << " example :" << std::endl;
+	Cal2._Print();
+
 	//CaliTCP();
 	//CaliTCF();
+
 	CaliTsaiLenz();
+
+	KMat<double> r1(3, 3);
+	r1 = { {0.374996,-0.791720,-0.483979 },
+		{-0.887216,-0.457312,0.065059},
+		{-0.268750,0.404997,-0.872658} };
+
+	KMat<double> Angle(1, 3);
+
+	KMat<double> r2(3, 3);
+	r2 = { {0.956815,0.289983,0.015828 },
+		{-0.290063,0.956997,0.002264},
+		{-0.019174,-0.006758,0.999872} };
+
+
 
 
 }
@@ -71,28 +111,49 @@ void tRoboticCaliTest::CaliTCP()
 	//TCP_Kmats.push_back(TCP_Kmat5);
 	//TCP_Kmats.push_back(TCP_Kmat6);
 
+	KMat<double> TCP_Kmat_Test1, TCP_Kmat_Test2, TCP_Kmat_Test3(4,4);
+	TCP_Kmat_Test1 = {
+	{ 0.314927, 0.777234, 0.544728 ,- 7.59921},
+	{ 0.592018, -0.344553, -0.728559, 701.008},
+	{-0.108655,  0.861626,  0.495776, 198.91},
+	{0,0,0,1 } };
+
+
 	TestCalculateTcp();
 
 }
 
 void tRoboticCaliTest::CaliTCF()
 {
-	KMat<double>TCF_TrackerKmat1, TCF_TrackerKmat2, TCF_TrackerKmat3,TCF_RobotKmat1, TCF_RobotKmat2, TCF_RobotKmat3(4, 4);
+	KMat<double>TCF_TrackerKmat1, TCF_TrackerKmat2, TCF_TrackerKmat3,TCF_B_ToBase(4, 4);
 
 	//------------------ TCF 测试数据 -----------------
-	TCF_TrackerKmat1 = { {  0.3538, 0.728994 ,0.585997 ,-335.635},
-						  { 0.935168 ,-0.287053 ,-0.207515,431.859},
-						  { 0.016935 ,  0.621424 ,-0.783291,436.962},
+	TCF_TrackerKmat1 = { {  0.346517  ,0.753031,   0.559349 ,- 342.638},
+						  { 0.937857 ,-0.266233 ,- 0.222584 , 438.24},
+						  { -0.0186955, 0.601718, - 0.79849 , 358.239},
 						  { 0, 0, 0, 1} };
-	TCF_TrackerKmat2 = { { 0.358188 , 0.724568 , 0.588815 ,-194.48},
-						  { 0.93346 ,-0.290625 ,-0.210214, 385.777},
-						  { 0.01881 ,  0.624931 ,-0.780453, 438.323},
+	TCF_TrackerKmat2 = { { 0.342549 ,   0.752949 , 0.561896,- 150.286},
+						  { 0.93933 , - 0.263095 ,- 0.220092,379.608},
+						  {-0.0178863,  0.603198, - 0.797391, 355.615},
 						  {0,0,0,1} };
-	TCF_TrackerKmat3 = { {0.347378 ,0.733421 ,0.584313 ,-334.891},
-						  {0.937584 ,-0.282483, -0.202831, 434.942},
-						  {0.0162981, 0.618302, -0.785772, 583.212},
+	TCF_TrackerKmat3 = { {0.35064 , 0.753558, 0.556059 ,- 340.483},
+						  {0.93629, - 0.269206, - 0.225585, 439.546},
+						  {-0.0202967, 0.599732 ,- 0.799943, 555.783},
 						  {0,0,0,1} };
 
+	TCF_B_ToBase = { {0.9603, - 0.286397, - 0.000145949 ,1025.4},
+					  {0.2789, 0.9603 ,- 0.0061715, -156.318},
+					  {0.00602965, 0.0150762, 0.999868, 616.76},
+					  {0,0,0,1} };
+
+	TCF_TrackerKmat1 = TCF_B_ToBase * TCF_TrackerKmat1;
+	TCF_TrackerKmat2 = TCF_B_ToBase * TCF_TrackerKmat2;
+	TCF_TrackerKmat3 = TCF_B_ToBase * TCF_TrackerKmat3;
+	TCF_TrackerKmat1._Print();
+	TCF_TrackerKmat2._Print();
+	TCF_TrackerKmat3._Print();
+
+	m_TermR = TCF_TrackerKmat1._GetR();
 
 	TCF_TrackerKmats.push_back(TCF_TrackerKmat1);
 	TCF_TrackerKmats.push_back(TCF_TrackerKmat2);
@@ -104,8 +165,8 @@ void tRoboticCaliTest::CaliTCF()
 void tRoboticCaliTest::CaliTsaiLenz()
 {
 	KMat<double>
-		Tsai_TrackerKmat1, Tsai_TrackerKmat2, Tsai_TrackerKmat3, Tsai_TrackerKmat4, Tsai_TrackerKmat5, Tsai_TrackerKmat6, Tsai_TrackerKmat7, Tsai_TrackerKmat8, Tsai_TrackerKmat9, Tsai_TrackerKmat10,Tsai_TrackerKmat11, Tsai_TrackerKmat12,
-		Tsai_RobotKmat1, Tsai_RobotKmat2, Tsai_RobotKmat3, Tsai_RobotKmat4, Tsai_RobotKmat5, Tsai_RobotKmat6,Tsai_RobotKmat7,Tsai_RobotKmat8, Tsai_RobotKmat9, Tsai_RobotKmat10,Tsai_RobotKmat11,Tsai_RobotKmat12 (4, 4);
+		Tsai_TrackerKmat1, Tsai_TrackerKmat2, Tsai_TrackerKmat3, Tsai_TrackerKmat4, Tsai_TrackerKmat5, Tsai_TrackerKmat6, Tsai_TrackerKmat7, Tsai_TrackerKmat8, Tsai_TrackerKmat9, Tsai_TrackerKmat10, Tsai_TrackerKmat11, Tsai_TrackerKmat12, Tsai_TrackerKmat13, Tsai_TrackerKmat14,
+		Tsai_RobotKmat1, Tsai_RobotKmat2, Tsai_RobotKmat3, Tsai_RobotKmat4, Tsai_RobotKmat5, Tsai_RobotKmat6, Tsai_RobotKmat7, Tsai_RobotKmat8, Tsai_RobotKmat9, Tsai_RobotKmat10, Tsai_RobotKmat11, Tsai_RobotKmat12, Tsai_RobotKmat13, Tsai_RobotKmat14(4, 4);
 
 
 	// --------------- TsaiLenz数据 ---------------
@@ -114,189 +175,260 @@ void tRoboticCaliTest::CaliTsaiLenz()
 
 	// 1 ---------------
 	Tsai_TrackerKmat1 = {
-	{0.102182,  0.465705, 0.879021 ,-253.679},
-	{0.878413, - 0.455153, 0.14569, 578.768},
-	{0.468602, 0.760474, - 0.449545, 383.555},
+	{0.777891, 0.319822, 0.540925 , -32.6978},
+	{0.613609, - 0.572245, -0.544077, 617.254},
+	{0.135344, 0.755438, - 0.641089 ,1524.8},
 	{ 0,0,0,1 }
 	};
 	Tsai_RobotKmat1 = {
-	{ -0.934294, -0.214328, 0.284883, 731.531 },
-	{ -0.0493643, 0.869181, 0.492024, 273.758},
-	{ -0.353069,  0.445632,- 0.822651,799.878},
+	{ -0.805782, 0.536068 ,0.251686, 799.019 },
+	{  0.550728, 0.834561 ,- 0.0143643, 268.402},
+	{ -0.217748, 0.127036 ,- 0.967702 ,636.809},
 	{ 0,0,0,1 }
 	};
 	// 2 ---------------
 	Tsai_TrackerKmat2 = {
-	{0.712843, 0.451156, 0.536949, - 54.6384},
-	{0.701141, - 0.440952, - 0.560324, 621.381},
-	{-0.0160247, 0.775899, - 0.630653, 171.259},
+	{0.622345, 0.107215, 0.775366, - 192.871},
+	{0.442207, - 0.86551 ,- 0.235256, 399.896},
+	{0.645863, 0.489283, - 0.586057, 1827.73},
 	{ 0,0,0,1 }
 	};
 	Tsai_RobotKmat2 = {
-	{-0.873376, 0.44687, 0.193703, 783.041},
-	{ 0.431304, 0.894374, - 0.118626, 241.585},
-	{-0.226253, - 0.0200603, - 0.973862, 633.949},
+	{-0.798359, 0.416646, 0.434776, 760.184},
+	{ 0.5968 , 0.643762,  0.478958, 137.513},
+	{-0.0803363 , 0.641854 , - 0.762607, 888.151},
 	{ 0,0,0,1 }
 	};
 	// 3 ---------------
 	Tsai_TrackerKmat3 = {
-	{0.0746504, 0.404345 ,0.911555, - 301.09 },
-	{0.97714 ,- 0.212208, 0.0128751, 408.026 },
-	{0.198855, 0.890879, - 0.408401, 338.253},
+	{0.542906, 0.233827, 0.806584, - 201.856 },
+	{0.604823, - 0.775196, - 0.182374 ,521.819 },
+	{0.582617, 0.586853, - 0.562283, 1828.23},
 	{ 0,0,0,1 }
 	};
 	Tsai_RobotKmat3 = {
-	{-0.869773, -0.259044 , 0.419989, 766.725 },
-	{-0.150072,  0.949672 , 0.274956, 48.7847 },
-	{-0.470078,  0.176121 ,-0.864875, 791.844},
+	{-0.875388, 0.290407, 0.386471, 731.043},
+	{0.454396 ,0.767141, 0.45279 ,228.365},
+	{-0.164984, 0.571978, - 0.803506, 896.577},
 	{ 0,0,0,1 }
 	};
 	// 4 -----------------
 	Tsai_TrackerKmat4 = {
-	{ 0.799715, - 0.146518, 0.582228, - 268.216},
-	{ 0.140151, - 0.897414, - 0.418338, 21.5188},
-	{ 0.583793,   0.41615, - 0.69714, 381.101},
+	{ 0.527681, 0.368022, 0.76558 ,- 157.577},
+	{ 0.631395 ,- 0.772842 ,- 0.0636795, 610.523},
+	{ 0.568237 ,0.516986, - 0.640182 ,1766.27},
 	{ 0 ,  0  ,  0  ,   1}
 	};
 	Tsai_RobotKmat4 = {
-	{-0.547889, 0.695814, 0.464393 ,748.662},
-	{ 0.83464 , 0.417241, 0.359563, -233.087},
-	{ 0.0564377, 0.584608, - 0.809351, 756.477},
+	{-0.930342, 0.266718, 0.251646, 728.4132},
+	{ 0.361386 ,0.783241, 0.505899, 335.792},
+	{ -0.0621673, 0.561601, - 0.82507, 829.641},
 	{ 0 ,  0  ,  0  ,   1}
 	};
 	// 5 ----------------
 
 	Tsai_TrackerKmat5 = {
-	{ 0.575991, 0.289486, 0.764482, - 93.2743 },
-	{ 0.73527, - 0.592149, - 0.329753 ,343.201},
-	{ 0.357228, 0.752035, - 0.553923, 436.597},
+	{ 0.678469, 0.373677, 0.632491, - 52.4438 },
+	{ 0.539488, - 0.837821, - 0.0837185, 600.315},
+	{ 0.498631, 0.398022, - 0.77003, 1614.39},
 	{ 0,0,0,1 }
 	};
 	Tsai_RobotKmat5 = {
-	{ -0.874529, 0.294804, 0.385085, 883.745 },
-	{ 0.396438 , 0.891927, 0.217493, 28.4085},
-	{ -0.27935 , 0.342868,-0.896887, 855.462},
+	{ -0.881603, 0.447417, 0.150312 ,782.395 },
+	{  0.459094, 0.73893, 0.493168 ,360.573},
+	{  0.109582, 0.503786, - 0.85685, 675.231},
 	{ 0,0,0,1 }
 	};
 	// 6 ---------------
 
 	Tsai_TrackerKmat6 = {
-	{ 0.740773, 0.56693, 0.36034, - 41.8169},
-	{ 0.606015, - 0.795433, 0.00564976, 497.283},
-	{ 0.289829, 0.214186, - 0.932804, 307.981},
+	{ 0.680039, 0.314528 ,0.662284, - 38.5049},
+	{ 0.573363, - 0.791125, - 0.213017, 518.66},
+	{ 0.456949, 0.524588, - 0.718334, 1628.67},
 	{ 0,0,0,1 }
 	};
 	Tsai_RobotKmat6 = {
-	{ -0.851316 , 0.492557, -0.180687,749.932},
-	{  0.373208 , 0.810588,  0.45129, 248.454 },
-	{  0.368749 , 0.316757, -0.873893, 716.921},
+	{ -0.864111, 0.44251 ,0.239788 ,835.807},
+	{ 0.503069, 0.773878, 0.384752, 259.488 },
+	{  -0.0153099 ,0.453098, - 0.891329, 695.583},
 	{ 0,0,0,1 }
 	};
 
 	// 7  ---------------
 
 	Tsai_TrackerKmat7 = {
-	{ 0.826743, 0.183496, 0.531813, - 247.438},
-	{ 0.362014, - 0.897116, - 0.253238 ,184.215 },
-	{ 0.430629,  0.401886,  - 0.808113,  340.58},
+	{0.919262  ,0.236327 ,0.314812 ,- 84.1842},
+	{ 0.326457 ,- 0.90456, - 0.274219 ,410.279},
+	{ 0.219961,  0.354852 ,- 0.908679, 1480.76},
 	{ 0,0,0,1 }
 	};
 	Tsai_RobotKmat7 = {
-	{-0.738969 , 0.643714,  0.198889, 686.164},
-	{ 0.658255 , 0.626884, 0.416794,  -91.0056 },
-	{ 0.143616 , 0.438917, - 0.886976, 726.002},
+	{-0.660702 , 0.750446 ,0.0174171 ,724.592},
+	{ 0.709874 , 0.617102 , 0.339506 ,157.177 },
+	{ 0.244033 , 0.236676 ,- 0.940443, 562.434},
 	{ 0,0,0,1 }
 	};
 
 	// 8  ---------------
 
 	Tsai_TrackerKmat8 = {
-	{ 0.139826, 0.517739, 0.844035, - 355.728},
-	{ 0.910173, - 0.40287, 0.0963416, 669.323 },
-	{ 0.389916, 0.754746, - 0.527564, 384.14},
+	{ 0.921517, 0.114542, 0.371062, - 78.7954},
+	{ 0.333673, - 0.72237, - 0.605677, 190.87 },
+	{ 0.198669, 0.681955, - 0.703895, 1572.96},
 	{ 0,0,0,1 }
 	};
 	Tsai_RobotKmat8 = {
-	{ 0.950692  ,-0.182181, 0.250988, 597.252},
-	{ -0.0647175, 0.908002, 0.413938, 309.412},
-	{ -0.303309, 0.377284, - 0.87502, 800},
+	{-0.619235, 0.749727, 0.23336, 831.837},
+	{ 0.77462, 0.63192, 0.0253013, - 114.282},
+	{ -0.128496 , 0.196433, - 0.972061, 665.579},
 	{ 0,0,0,1 }
 	};
 
 	// 9  ---------------
 
 	Tsai_TrackerKmat9 = {
-	{ 0.697688, 0.541589 , 0.468949, - 412.132},
-	{ 0.702978, - 0.643683, - 0.30248, 351.442 },
-	{ 0.138035,  0.540698, - 0.829815, 314.314},
+	{ 0.931199 ,0.189579, 0.311333, - 133.865},
+	{ 0.358933, - 0.625748 ,- 0.692536, 189.029},
+	{ 0.0635256,  0.756637, - 0.650742, 1552.22},
 	{ 0,0,0,1 }
 	};
 	Tsai_RobotKmat9 = {
-	{ -0.911776, 0.410685, 0.001535 ,488.501},
-	{  0.405582, 0.899848, 0.160553, - 65.9095 },
-	{  0.0645553, 0.147011, - 0.987026, 731.221},
+	{ -0.635976, 0.75034, 0.180346, 770.347},
+	{ 0.743155, 0.658468 ,- 0.118918 ,- 162.416 },
+	{  -0.207981, 0.0583959, - 0.976388, 667.859},
 	{ 0,0,0,1 }
 	};
 
 	// 10  ---------------
 
 	Tsai_TrackerKmat10 = {
-	{ 0.70582,   0.528173,  0.472071,  - 239.959},
-	{ 0.623938, - 0.779072 ,- 0.0612273, 514.81 },
-	{ 0.335438,  0.337758 , - 0.879432, 324.94},
+	{ 0.95973,  0.137645 , 0.244891,  - 185.163},
+	{ 0.275216, - 0.635513, - 0.721373 ,149.424 },
+	{ 0.0563382, 0.759721, - 0.647803, 1572.69},
 	{ 0,0,0,1 }
 	};
 	Tsai_RobotKmat10 = {
-	{ -0.892489, 0.447237, - 0.0586803, 588},
-	{  0.38378, 0.821253,   0.422205, 199.999},
-	{  0.237017, 0.354293, - 0.904599, 723},
+	{ -0.571244, 0.803253, 0.168714, 719.671},
+	{ 0.793142, 0.593113, - 0.138354, - 209.211},
+	{ -0.2112, 0.0547802 ,- 0.975907, 687.884},
 	{ 0,0,0,1 }
 	};
 
 	// 11 -------------
 	Tsai_TrackerKmat11 = {
-		{0.706591, 0.526781, 0.472473 ,- 239.962},
-		{0.622918, - 0.779816, - 0.0621342, 514.621},
-		{0.335711, 0.338216, - 0.879152, 324.859},
+		{0.925584, 0.151899, 0.34673 ,- 260.43},
+		{0.374906, - 0.494519, - 0.784154, 135.59},
+		{0.0523527, 0.855791 ,- 0.514666, 1654.28},
 		{0, 0, 0 ,1}
 	};
 
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat1);
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat2);
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat3);
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat4);
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat5);
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat6);
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat7);
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat8);
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat9);
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat10);
-	Tsai_TrackerKmats.push_back(Tsai_TrackerKmat11);
+	Tsai_RobotKmat11 = {
+		{-0.617127 ,0.737606 ,0.274029, 683.537},
+		{ 0.696773, 0.674069 ,- 0.24523 ,- 275.613},
+		{ -0.365597, 0.0395983, - 0.92993 ,785.013},
+		{0, 0, 0 ,1}
+	};
 
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat1);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat2);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat3);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat4);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat5);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat6);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat7);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat8);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat9);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat10);
-	Tsai_RobotKmats.push_back(Tsai_RobotKmat11);
+	// 12 -------------
+	Tsai_TrackerKmat12 = {
+		{0.981011, - 0.119016 ,0.153142 ,- 285.958},
+		{0.0313685, - 0.68183 ,- 0.730838, 88.7638},
+		{0.191398, 0.721764 ,- 0.66515, 1633.43},
+		{0, 0, 0 ,1}
+	};
 
+	Tsai_RobotKmat12 = {
+		{-0.346107, 0.906418, 0.242108 ,630.498},
+		{ 0.920692, 0.37776 ,- 0.0981005 ,- 256.515},
+		{ -0.180379, 0.188954, - 0.965277 ,725.343},
+		{0, 0, 0 ,1}
+	};
+
+	// 13 -------------
+	Tsai_TrackerKmat13 = {
+		{0.943642,   0.163742, 0.287626 ,- 290.66},
+		{0.327253, - 0.591459 ,- 0.736941 ,181.806},
+		{0.0494505, 0.789534, - 0.611711 ,1665.3},
+		{0, 0, 0 ,1}
+	};
+
+	Tsai_RobotKmat13 = {
+		{-0.608743, 0.769089,  0.194766 ,620.624},
+		{ 0.751407, 0.637684 , - 0.169547, - 221.639},
+		{-0.254596, 0.0431382, - 0.966085, 785.525},
+		{0, 0, 0 ,1}
+	};
+
+	// 14 -------------
+	Tsai_TrackerKmat14 = {
+		{0.881764,  0.240776, 0.40561, - 266.607},
+		{0.464314, - 0.594543 ,- 0.656453 ,266.765},
+		{0.0830941, 0.767167 ,- 0.636043, 1700.89},
+		{0, 0, 0 ,1}
+	};
+
+	Tsai_RobotKmat14 = {
+		{-0.714317, 0.663691, 0.221958, 644.913},
+	    { 0.662275, 0.743583, -0.0920666, - 134.988},
+	    {-0.226148, 0.0812324 ,- 0.9707, 815.241},
+		{0, 0, 0, 1}
+	};
+
+
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat1);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat2);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat3);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat4);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat5);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat6);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat7);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat8);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat9);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat10);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat11);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat12);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat13);
+	//Tsai_TrackerKmats.push_back(Tsai_TrackerKmat14);
+
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat1);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat2);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat3);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat4);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat5);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat6);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat7);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat8);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat9);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat10);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat11);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat12);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat13);
+	//Tsai_RobotKmats.push_back(Tsai_RobotKmat14);
 
 
 
 	KMat<double> zeroMat(4, 4);
+
 	m_OriginalDataMat = zeroMat;
 	m_ResultDataMat = zeroMat;
 	m_RobotBaseToTrackerBase = zeroMat;
 	m_TrackerToTerminalMat = zeroMat;
 
+	std::string dirname = "CaliData.txt";
+	MCalibration::LoadRTCaliDataFromTxt(dirname, Tsai_TrackerKmats, Tsai_RobotKmats);
 
 	TestCalculateTsaiLenzForRobot();
 
+}
+
+void tRoboticCaliTest::TestTCP()
+{
+	m_SetTcp = { {0.0000},
+				 {-76.879},
+				 {134.952} };
+
+	std::string strFile = "E:/HMProject/Data/TcpPoints627.txt ";
+	m_TestTcpDatas = MCalibration::LoadTcpCaliDataFromTxt();
 }
 
 void tRoboticCaliTest::TestCalculateTcp()
@@ -316,7 +448,7 @@ void tRoboticCaliTest::TestCalculateTcp()
 void tRoboticCaliTest::TestCalculateTcf()
 {
 	KMat<double> outputMat;
-	MCalibration::Calibration_OpenCV_TCF(TCF_TrackerKmats, outputMat);
+	MCalibration::Calibration_OpenCV_TCF(m_TermR,TCF_TrackerKmats, outputMat);
 	m_TrackerToTerminalMat._assign(outputMat, 1, 3, 1, 3);
 }
 

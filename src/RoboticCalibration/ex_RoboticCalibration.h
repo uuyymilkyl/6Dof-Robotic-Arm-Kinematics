@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 #include "../../src/f_TransPose.hpp"
+#include <fstream>
+#include <string>
 
 #include <opencv2/core.hpp>
 #include <opencv2/opencv.hpp>
@@ -51,7 +53,7 @@ public:
     *
     *****************************************************************************
     */
-    static void Calibration_OpenCV_TCF(std::vector<KMat<double>>& _vInputPoseMat, KMat<double>& _OutputMat);
+    static void Calibration_OpenCV_TCF(KMat<double>& _ER,std::vector<KMat<double>>& _vInputPoseMat, KMat<double>& _OutputMat);
 
     /**
     *****************************************************************************
@@ -103,7 +105,12 @@ public:
     /*最小二乘解TCP*/
     static void LeastSquareSolveTCP(std::vector<KMat<double>>& _vec_inputPose, KMat<double>& _matOut);
 
+    /*通过txt加载RT标定的数据 */
+    static void LoadRTCaliDataFromTxt(std::string& _inputDir, std::vector<KMat<double>>& _TrackerPoints, std::vector<KMat<double>> & _RobotPoints);
 
+    /*通过txt加载tcp标定的数据 */
+
+    static void LoadTcpCaliDataFromTxt(std::string& _inputDir, std::vector<KMat<double>>& _TcpPoints);
 private:
 
 };

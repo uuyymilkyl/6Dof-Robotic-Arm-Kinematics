@@ -13,7 +13,7 @@ public:
 	void CaliTCP();
 	void CaliTCF();
 	void CaliTsaiLenz();
-
+	void TestTCP();
 
 public :
 		std::vector<KMat<double>> TCP_Kmats;
@@ -21,6 +21,9 @@ public :
 		std::vector<KMat<double>> Tsai_TrackerKmats;
 		std::vector<KMat<double>> Tsai_RobotKmats;
 
+		std::vector<KMat<double>> m_TestTcpDatas;
+		KMat<double> m_SetTcp;
+		KMat<double> m_CalTcp;
 		// ½á¹û
 		KMat<double>  m_TrackerToTerminalMat;
 		KMat<double>  m_RobotBaseToTrackerBase;
@@ -29,6 +32,7 @@ public :
 		KMat<double> m_OriginalDataMat;
 		KMat<double> m_ResultDataMat;
 		KMat<double> m_ResultDataMat_ByCal;
+		KMat<double> m_TermR;
 
 public:
 	void TestCalculateTcp();

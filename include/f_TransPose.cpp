@@ -31,9 +31,9 @@ KMat<double> TranPose::EulToRot_XYZ_T(KMat<double>& _EulAngle)
     KMat<double> Mat4_4(4, 4);
 
     // ½Ç¶È×ª»¡¶È
-    double a1 = _EulAngle(0, 3)  ;
-    double a2 = _EulAngle(0, 4)  ;
-    double a3 = _EulAngle(0, 5)  ;
+    double a1 = _EulAngle(0, 3) /180.0f * PI ;
+    double a2 = _EulAngle(0, 4) / 180.0f * PI;
+    double a3 = _EulAngle(0, 5) / 180.0f * PI;
 
     Mat4_4 = {
         {cos(a2) * cos(a3),                               -cos(a2) * sin(a3)                              ,            sin(a2), _EulAngle(0, 0)},

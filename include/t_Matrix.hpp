@@ -34,13 +34,11 @@ public:
 	void operator=(std::vector<std::vector<T>> _values);  ///< 等于 - 矩阵 - 赋值此二维数组
 	T& operator()(int _nRow, int _nCol);
 
-
 	KMat<T> operator+(const KMat<T>& _M);    ///< 加法
 	KMat<T> operator-(const KMat<T>& _M);    ///< 剪法
 	KMat<T> operator*(const KMat<T>& _M);    ///< 乘法
 	KMat<T> operator/(const KMat<T>& _M);    ///< 除法 - 矩阵 (除一个矩阵等于左乘）
 	KMat<T> operator/(T _Value);             ///< 除法 - 倍数 (缩放_Value倍）
-
 
 	void _assign(KMat<T>& _M, int startRow, int endRow, int startCol, int endCol);  //部分赋值
 	void _append_row(KMat<T>& _M);   //追加为行

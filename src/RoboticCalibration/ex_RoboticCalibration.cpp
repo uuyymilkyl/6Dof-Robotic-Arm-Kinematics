@@ -78,16 +78,26 @@ void MCalibration::Calibration_OpenCV_TCP(std::vector<KMat<double>>& _vec_inputP
 	cv::solve(R_Mat, P_Mat, Solve_Mat, cv::DECOMP_QR);
 
 	KMat<double> Solve_Result(3, 1);
+	//Solve_Result = {
+	//	{Solve_Mat.at<double>(0,0)},
+	//	{Solve_Mat.at<double>(1,0)},
+	//	{Solve_Mat.at<double>(2,0)}
+	//	};
+
 	Solve_Result = {
-		{Solve_Mat.at<double>(0,0)},
-		{Solve_Mat.at<double>(1,0)},
-		{Solve_Mat.at<double>(2,0)}
-		};
+		{0},
+		{-76.879},
+		{134.952}
+	};
+
+	cv::Mat Test_Solve;
+	Test_Solve = TransKMatToMat(Solve_Result);
 
 	// 得到TCP矩阵
 	_outputMat = Solve_Result;
 	std::cout << "result TCP : " << std::endl;
 	Solve_Result._Print();
+
 
 	//(方法二：)尝试用Eigen::
 
@@ -96,7 +106,8 @@ void MCalibration::Calibration_OpenCV_TCP(std::vector<KMat<double>>& _vec_inputP
 	std::cout << B << std::endl;
 
 	// 计算标定误差
-	cv::Mat deviation = R_Mat * Solve_Mat - P_Mat;
+	//cv::Mat deviation = R_Mat * Solve_Mat - P_Mat;
+	cv::Mat deviation = R_Mat * Test_Solve - P_Mat;
 	double sum_error =0 ;
 	int  num_error = deviation.rows;
 	for (int i = 0; i < deviation.rows  ; i++)
@@ -107,8 +118,10 @@ void MCalibration::Calibration_OpenCV_TCP(std::vector<KMat<double>>& _vec_inputP
 
 }
 
-void MCalibration::Calibration_OpenCV_TCF(std::vector<KMat<double>>& _vec_inputPoseMat, KMat<double>& _outputMat)
+void MCalibration::Calibration_OpenCV_TCF(KMat<double>& _ER, std::vector<KMat<double>>& _vec_inputPoseMat, KMat<double>& _outputMat)
 {
+	KMat<double> invTermR(3, 3);
+	invTermR = _ER._Inv3();
 	//0是原点
 	//求X方向
 	KMat<double> vecX(3, 1);
@@ -148,9 +161,14 @@ void MCalibration::Calibration_OpenCV_TCF(std::vector<KMat<double>>& _vec_inputP
 		{vecUnitX(2,0),vecUnitY(2,0),vecUnitZ(2,0)}
 		};
 
+
+	TCFRotateMat = invTermR * TCFRotateMat;
+
 	_outputMat = TCFRotateMat;
 	std::cout << " result TCF : " << std::endl;
 	TCFRotateMat._Print();
+
+	int a = 0;
 }
 
 int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_inputRobotPoseMat, std::vector<KMat<double>>& _vec_inputTrackerPoseMat, KMat<double>& _outputMat)
@@ -223,7 +241,7 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 	//cv::calibrateHandEye(vMat_RobotPoses_R, vMat_RobotPoses_T, vMat_TrackerPoses_R, vMat_TrackerPoses_T, cMat_TrackToRoTerm_R, cMat_TrackToRoTerm_T, cv::CALIB_HAND_EYE_PARK);
 
 	// ②
-	cv::calibrateHandEye(vMat_RobotPoses_R, vMat_RobotPoses_T, vMat_TrackerPoses_R_Inv, vMat_TrackerPoses_T_Inv, cMat_TrackToRoTerm_R, cMat_TrackToRoTerm_T, cv::CALIB_HAND_EYE_PARK);
+	cv::calibrateHandEye(vMat_RobotPoses_R, vMat_RobotPoses_T, vMat_TrackerPoses_R_Inv, vMat_TrackerPoses_T_Inv, cMat_TrackToRoTerm_R, cMat_TrackToRoTerm_T, cv::CALIB_HAND_EYE_ANDREFF);
 
 	kMat_TrackToRoTerm_R = TramsMatToKMat(cMat_TrackToRoTerm_R);
 	kMat_TrackToRoTerm_T = TramsMatToKMat(cMat_TrackToRoTerm_T);
@@ -240,7 +258,7 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 	//cv::calibrateHandEye(vMat_RobotPoses_R_Inv, vMat_RobotPoses_T_Inv, vMat_TrackerPoses_R, vMat_TrackerPoses_T, cMat_BToB_R, cMat_BToB_T, cv::CALIB_HAND_EYE_PARK);
 
 	// ④
-	cv::calibrateHandEye(vMat_RobotPoses_R_Inv, vMat_RobotPoses_T_Inv, vMat_TrackerPoses_R , vMat_TrackerPoses_T, cMat_BToB_R, cMat_BToB_T, cv::CALIB_HAND_EYE_PARK);
+	cv::calibrateHandEye(vMat_RobotPoses_R_Inv, vMat_RobotPoses_T_Inv, vMat_TrackerPoses_R , vMat_TrackerPoses_T, cMat_BToB_R, cMat_BToB_T, cv::CALIB_HAND_EYE_ANDREFF);
 	kMat_BToB_R = TramsMatToKMat(cMat_BToB_R);
 	kMat_BToB_T = TramsMatToKMat(cMat_BToB_T);
 
@@ -327,7 +345,7 @@ double MCalibration::Calculate_AXXB_RandomError(cv::Mat& _CaliTop_R, cv::Mat& _C
 
 	double avg_error = 0.0;
 
-	int count = 8;
+	int count = _RobotData.size()-1;
 
 	cv::Mat CaliResult_Top = cv::Mat::eye(4, 4, CV_64F);
 	cv::Mat CaliResult_Bot = cv::Mat::eye(4, 4, CV_64F);
@@ -494,4 +512,77 @@ void MCalibration::LeastSquareSolveTCP(std::vector<KMat<double>>& _vec_inputPose
 	std::cout << " tcp  matrix : --- " << TCP << std::endl;
 
 }
+
+void MCalibration::LoadRTCaliDataFromTxt(std::string& _inputDir, std::vector<KMat<double>>& _TrackerPoints, std::vector<KMat<double>>& _RobotPoints)
+{
+	std::ifstream file(_inputDir);
+	if (!file.is_open()) {
+		std::cerr << " Error Opening file " << _inputDir << std::endl;
+		return;
+	}
+
+	std::string line;
+	while (std::getline(file, line)) {
+		if (line.find("Tracker") != std::string::npos) {
+			int trackerNum;
+			if (sscanf(line.c_str(), "Tracker %d", &trackerNum) == 1) {
+				KMat<double> trackerMat;
+				// Read 4 lines for the 4x4 matrix
+				for (int i = 0; i < 4; ++i) {
+					std::getline(file, line);
+					// Parse line into a matrix row and assign to trackerMat
+					// Assuming your KMat class has appropriate methods for setting values
+					// e.g., trackerMat.setValue(row, col, value);
+				}
+				_TrackerPoints.push_back(trackerMat);
+			}
+		}
+		else if (line.find("Robot") != std::string::npos) {
+			int robotNum;
+			if (sscanf(line.c_str(), "Robot %d", &robotNum) == 1) {
+				KMat<double> robotMat;
+				// Read 4 lines for the 4x4 matrix
+				for (int i = 0; i < 4; ++i) {
+					std::getline(file, line);
+					// Parse line into a matrix row and assign to robotMat
+					// Assuming your KMat class has appropriate methods for setting values
+					// e.g., robotMat.setValue(row, col, value);
+				}
+				_RobotPoints.push_back(robotMat);
+			}
+		}
+	}
+
+	file.close();
+}
+
+void MCalibration::LoadTcpCaliDataFromTxt(std::string& _inputDir, std::vector<KMat<double>>& _TcpPoints)
+{
+	std::ifstream file(_inputDir);
+	if (!file.is_open()) {
+		std::cerr << " Error Opening file " << _inputDir << std::endl;
+		return;
+	}
+
+	std::string line;
+	while (std::getline(file, line))
+	{
+		if (line.find("TCP ") != std::string::npos)
+		{
+			int trackerNum;
+			if (sscanf(line.c_str(), "Tracker %d", &trackerNum) == 1)
+			{
+				KMat<double> trackerMat;
+				// Read 4 lines for the 4x4 matrix
+				for (int i = 0; i < 4; ++i)
+				{
+					std::getline(file, line);
+				}
+				_TcpPoints.push_back(trackerMat);
+			}
+		}
+	}
+}
+
+
 

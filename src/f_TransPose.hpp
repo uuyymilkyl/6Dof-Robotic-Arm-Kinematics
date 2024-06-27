@@ -52,6 +52,8 @@ public:
 	static KMat<double> VectorXYZToRotTcp(KMat<double>& _VectorX, KMat<double>& _VectorY, KMat<double>& _VectorZ);
 
 
+
+
 private:
 
 };
