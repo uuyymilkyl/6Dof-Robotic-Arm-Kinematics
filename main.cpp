@@ -2,6 +2,5 @@
 
 int main()
 {
-	tRoboticCaliTest Test;
 	return 0;
 }

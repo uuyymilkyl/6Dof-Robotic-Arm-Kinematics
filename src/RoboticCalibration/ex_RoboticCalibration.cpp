@@ -175,19 +175,18 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 {
 
 	//换成OpenCV的Mat形式
-	std::vector< cv::Mat> vMat_RobotPoses_R;      // 左矩阵
+	std::vector< cv::Mat> vMat_RobotPoses_R;
 	std::vector< cv::Mat> vMat_RobotPoses_T;
-	std::vector< cv::Mat> vMat_RobotPoses_R_Inv;  // 左矩阵求逆
+	std::vector< cv::Mat> vMat_RobotPoses_R_Inv;
 	std::vector< cv::Mat> vMat_RobotPoses_T_Inv;
 
-	std::vector< cv::Mat> vMat_TrackerPoses_R;    // 右矩阵
+	std::vector< cv::Mat> vMat_TrackerPoses_R;
 	std::vector< cv::Mat> vMat_TrackerPoses_T;
-	std::vector< cv::Mat> vMat_TrackerPoses_R_Inv;// 右矩阵求逆
+	std::vector< cv::Mat> vMat_TrackerPoses_R_Inv;
 	std::vector< cv::Mat> vMat_TrackerPoses_T_Inv;
 
 	for (int i = 0; i < _vec_inputRobotPoseMat.size()-1; i++)
 	{
-		// 机器人手
 		KMat<double> KMat_RobotPose_R = _vec_inputRobotPoseMat[i] ._GetR();
 		KMat<double> KMat_RobotPose_T = _vec_inputRobotPoseMat[i] ._GetT();
 		// 转换成cvMat格式
@@ -197,7 +196,6 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 		vMat_RobotPoses_R.push_back(cvMat_RobotPose_R);
 		vMat_RobotPoses_T.push_back(cvMat_RobotPose_T);
 
-		// 机器人手求逆
 		KMat<double> KMat_RobotPose_Inv = _vec_inputRobotPoseMat[i]._Inv4();
 		KMat<double> KMat_RobotPose_Inv_R = KMat_RobotPose_Inv._GetR();
 		KMat<double> KMat_RobotPose_Inv_T = KMat_RobotPose_Inv._GetT();
@@ -209,7 +207,6 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 		vMat_RobotPoses_T_Inv.push_back(cvMat_RobotPose_Inv_T);
 
 
-		// 追踪器-基站
 		// 分开获取R矩阵和T矩阵
 		KMat<double> KMat_TrackerPose_R = _vec_inputTrackerPoseMat[i]._GetR();
 		KMat<double> KMat_TrackerPose_T = _vec_inputTrackerPoseMat[i]._GetT();
@@ -221,15 +218,12 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 		vMat_TrackerPoses_T.push_back(cvMat_TrackerPose_T);
 
 
-		// 追踪器-基站求逆
+
 		KMat<double> KMat_TrackerPose_Inv = _vec_inputTrackerPoseMat[i]._Inv4();
-		// 分开获取R矩阵和T矩阵
 		KMat<double> KMat_TrackerPose_Inv_R = KMat_TrackerPose_Inv._GetR();
 		KMat<double> KMat_TrackerPose_Inv_T = KMat_TrackerPose_Inv._GetT();
-		// 转换成cvMat格式
 		cv::Mat	 cvMat_TrackerPose_Inv_R = TransKMatToMat(KMat_TrackerPose_Inv_R);
 		cv::Mat	 cvMat_TrackerPose_Inv_T = TransKMatToMat(KMat_TrackerPose_Inv_T);
-		// 放进容器中
 		vMat_TrackerPoses_R_Inv.push_back(cvMat_TrackerPose_Inv_R);
 		vMat_TrackerPoses_T_Inv.push_back(cvMat_TrackerPose_Inv_T);
 	}
@@ -237,10 +231,7 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 	cv::Mat cMat_TrackToRoTerm_T;
 	KMat<double> kMat_TrackToRoTerm_R(3, 3);
 	KMat<double> kMat_TrackToRoTerm_T(3, 1);
-	// ①
-	//cv::calibrateHandEye(vMat_RobotPoses_R, vMat_RobotPoses_T, vMat_TrackerPoses_R, vMat_TrackerPoses_T, cMat_TrackToRoTerm_R, cMat_TrackToRoTerm_T, cv::CALIB_HAND_EYE_PARK);
 
-	// ②
 	cv::calibrateHandEye(vMat_RobotPoses_R, vMat_RobotPoses_T, vMat_TrackerPoses_R_Inv, vMat_TrackerPoses_T_Inv, cMat_TrackToRoTerm_R, cMat_TrackToRoTerm_T, cv::CALIB_HAND_EYE_ANDREFF);
 
 	kMat_TrackToRoTerm_R = TramsMatToKMat(cMat_TrackToRoTerm_R);
@@ -254,10 +245,7 @@ int MCalibration::Calibration_OpenCV_TsaiLenz(std::vector<KMat<double>>& _vec_in
 
 	KMat<double> kMat_BToB_R(3, 3);
 	KMat<double> kMat_BToB_T(3, 1);
-	// ③
-	//cv::calibrateHandEye(vMat_RobotPoses_R_Inv, vMat_RobotPoses_T_Inv, vMat_TrackerPoses_R, vMat_TrackerPoses_T, cMat_BToB_R, cMat_BToB_T, cv::CALIB_HAND_EYE_PARK);
 
-	// ④
 	cv::calibrateHandEye(vMat_RobotPoses_R_Inv, vMat_RobotPoses_T_Inv, vMat_TrackerPoses_R , vMat_TrackerPoses_T, cMat_BToB_R, cMat_BToB_T, cv::CALIB_HAND_EYE_ANDREFF);
 	kMat_BToB_R = TramsMatToKMat(cMat_BToB_R);
 	kMat_BToB_T = TramsMatToKMat(cMat_BToB_T);
