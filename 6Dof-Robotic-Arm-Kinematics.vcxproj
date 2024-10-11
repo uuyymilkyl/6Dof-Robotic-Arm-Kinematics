@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="include\f_TransPose.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\f_Kinematics.cpp" />
     <ClCompile Include="src\f_TestCalibrate.cpp" />
     <ClCompile Include="src\RoboticCalibration\ex_RoboticCalibration.cpp" />
   </ItemGroup>

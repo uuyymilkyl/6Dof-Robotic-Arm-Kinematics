@@ -8,6 +8,45 @@ TranPose::~TranPose()
 {
 }
 
+KMat<double> TranPose::EulToRot_X(double& _Radian)
+{
+    double Rad = _Radian;
+    KMat<double> RotateMat(3, 3);
+
+    RotateMat = {
+        {1 ,  0 ,  0 },
+        {0 , cos(Rad), -sin(Rad)},
+        {0 , sin(Rad),  cos(Rad)}
+    };
+    return RotateMat;
+}
+
+KMat<double> TranPose::EulToRot_Y(double& _Radian)
+{
+    double Rad = _Radian;
+    KMat<double> RotateMat(3, 3);
+
+    RotateMat = {
+        {cos(Rad) ,  0 ,  sin(Rad)},
+        {0 ,         0 ,         0},
+        {-sin(Rad),  0 ,  cos(Rad)}
+    };
+    return RotateMat;
+}
+
+KMat<double> TranPose::EulToRot_Z(double& _Radian)
+{
+    double Rad = _Radian;
+    KMat<double> RotateMat(3, 3);
+
+    RotateMat = {
+        {cos(Rad) , -sin(Rad) ,  0},
+        {sin(Rad)  , cos(Rad), 0},
+        {0  ,  0 ,  0}
+    };
+    return RotateMat;
+}
+
 
 KMat<double> TranPose::EulToRot_XYZ(KMat<double>& _EulAngle)
 {
@@ -172,10 +211,28 @@ KMat<double> TranPose::EulToRot_ZXZ_T(KMat<double>& _EulAngle)
 
 KMat<double> TranPose::EulToRot_ZYX(KMat<double>& _EulAngle)
 {
-    return KMat<double>();
+
+    double a1 = _EulAngle(0, 3) / 180.0f * PI;
+    double a2 = _EulAngle(0, 4) / 180.0f * PI;
+    double a3 = _EulAngle(0, 5) / 180.0f * PI;
+
+
+    KMat<double> RotateMat(3, 3);
+    RotateMat = EulToRot_X(a1) * EulToRot_Y(a2) * EulToRot_Z(a3);
+
+    return RotateMat;
 }
 
 KMat<double> TranPose::EulToRot_ZYX_T(KMat<double>& _EulAngle)
 {
-    return KMat<double>();
+    double a1 = _EulAngle(0, 3) / 180.0f * PI;
+    double a2 = _EulAngle(0, 4) / 180.0f * PI;
+    double a3 = _EulAngle(0, 5) / 180.0f * PI;
+
+    KMat<double> RotateMat(3, 3);
+    RotateMat = EulToRot_X(a1) * EulToRot_Y(a2) * EulToRot_Z(a3);
+
+    KMat<double> RotateMat_T(4, 4);
+
+    return RotateMat;
 }

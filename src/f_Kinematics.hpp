@@ -4,21 +4,20 @@
 #include "f_TransPose.hpp"
 #include "../include/t_Matrix.hpp"
 
-class KF
+
+// 运动学解算类
+class KineSolution
 {
 public:
-	KF();
-	~KF();
+	KineSolution();
+	~KineSolution();
+
+
 
 private:
 
+	// DH参数设置
+	double 
 };
 
-KF::KF()
-{
-}
-
-KF::~KF()
-{
-}
 #endif // !_KINEMATICS_HPP_

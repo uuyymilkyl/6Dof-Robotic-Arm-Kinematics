@@ -23,6 +23,16 @@ public:
 	~TranPose();
 
 	// 旋转矩阵 <-> 欧拉角
+	// 绕X轴选举N度
+	static KMat<double>  EulToRot_X(double &_Radian);
+	// 绕y轴旋转N度
+	static KMat<double>  EulToRot_Y(double& _Radian);
+	// 绕Z轴旋转
+	static KMat<double>  EulToRot_Z(double& _Radian);
+
+
+
+	// 欧拉角转旋转矩阵
 	static KMat<double> EulToRot_ZXZ(KMat<double> &_EulAngle);
 	static KMat<double> EulToRot_ZXZ_T(KMat<double> &_EulAngle);
 
